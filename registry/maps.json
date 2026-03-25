@@ -1,0 +1,56 @@
+{
+  "_comment": "S.I.N.A Map Registry — tracks available and installed map regions",
+  "_version": "1",
+  "default_center": [43.6532, -79.3832],
+  "default_zoom": 10,
+  "regions": [
+    {
+      "id": "toronto",
+      "name": "Toronto",
+      "area": "Toronto, Ontario",
+      "country": "Canada",
+      "file_name": "toronto.mbtiles",
+      "size_estimate_mb": 800,
+      "min_zoom": 0,
+      "max_zoom": 16,
+      "bounds": [-79.7, 43.5, -79.1, 43.9],
+      "center": [-79.3832, 43.6532, 12],
+      "priority": "high",
+      "notes": "Download from geofabrik.de or extract from Ontario dataset"
+    },
+    {
+      "id": "ontario",
+      "name": "Ontario",
+      "area": "Province of Ontario, Canada",
+      "country": "Canada",
+      "file_name": "ontario.mbtiles",
+      "size_estimate_mb": 4500,
+      "min_zoom": 0,
+      "max_zoom": 14,
+      "bounds": [-95.2, 41.7, -74.3, 56.9],
+      "center": [-84.5, 50.0, 6],
+      "priority": "high",
+      "notes": "Available from geofabrik.de/north-america/canada/ontario"
+    },
+    {
+      "id": "canada",
+      "name": "Canada (Overview)",
+      "area": "Canada",
+      "country": "Canada",
+      "file_name": "canada-overview.mbtiles",
+      "size_estimate_mb": 2000,
+      "min_zoom": 0,
+      "max_zoom": 8,
+      "bounds": [-141.0, 41.7, -52.6, 83.1],
+      "center": [-95.0, 60.0, 4],
+      "priority": "medium",
+      "notes": "Country-level overview. Higher detail available per-province."
+    }
+  ],
+  "acquisition_guide": {
+    "geofabrik": "https://download.geofabrik.de/north-america/canada/",
+    "openmaptiles": "https://openmaptiles.org/",
+    "maptiler": "https://cloud.maptiler.com/maps/",
+    "note": "Download .osm.pbf files from Geofabrik and convert to MBTiles using tilemaker or similar tools."
+  }
+}

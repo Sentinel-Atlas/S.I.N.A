@@ -1,0 +1,23 @@
+{
+  "name": "sina",
+  "version": "0.1.0",
+  "description": "S.I.N.A — Personal Offline Command Center",
+  "private": true,
+  "workspaces": [
+    "app/frontend",
+    "app/backend",
+    "app/shared"
+  ],
+  "scripts": {
+    "dev": "concurrently -n backend,frontend -c cyan,magenta \"npm run dev --workspace=app/backend\" \"npm run dev --workspace=app/frontend\"",
+    "build": "npm run build --workspace=app/backend && npm run build --workspace=app/frontend",
+    "start": "npm run start --workspace=app/backend",
+    "backend": "npm run dev --workspace=app/backend",
+    "frontend": "npm run dev --workspace=app/frontend",
+    "setup": "node scripts/setup.js",
+    "health": "bash scripts/health-check.sh"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

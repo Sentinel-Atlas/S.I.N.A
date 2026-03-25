@@ -1,0 +1,66 @@
+version: "3.9"
+
+# S.I.N.A — Supporting Services
+# These containers are OPTIONAL supplements to the main application.
+# The core S.I.N.A backend runs natively, not in Docker.
+# Use `docker compose up -d` to start supporting services.
+
+services:
+
+  # ── Ollama — Local AI Runtime ──────────────────────────────────────────────
+  # Serves local LLMs over HTTP. S.I.N.A connects to it via OLLAMA_HOST.
+  # Can also be installed natively: https://ollama.ai
+  ollama:
+    image: ollama/ollama:latest
+    container_name: sina-ollama
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:11434:11434"
+    volumes:
+      - ollama-models:/root/.ollama
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+    profiles:
+      - ai
+
+  # ── ChromaDB — Vector Store (optional, for large collections) ──────────────
+  # Used for semantic/RAG search when the built-in SQLite vector index
+  # reaches scale limits. Enable with: docker compose --profile vector up
+  chromadb:
+    image: chromadb/chroma:latest
+    container_name: sina-chromadb
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - chroma-data:/chroma/chroma
+    environment:
+      - IS_PERSISTENT=TRUE
+      - ANONYMIZED_TELEMETRY=FALSE
+    profiles:
+      - vector
+
+  # ── TileServer-GL — Offline Map Tiles ─────────────────────────────────────
+  # Serves MBTiles files as raster/vector tile endpoints.
+  # Place .mbtiles files in data/maps/ and they will be auto-detected.
+  tileserver:
+    image: maptiler/tileserver-gl:latest
+    container_name: sina-tileserver
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - "${SINA_DATA_DIR:-./data}/maps:/data"
+    command: --port 8080
+    profiles:
+      - maps
+
+volumes:
+  ollama-models:
+    name: sina-ollama-models
+  chroma-data:
+    name: sina-chromadb-data
+
+networks:
+  default:
+    name: sina-network

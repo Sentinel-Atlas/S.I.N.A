@@ -1,35 +1,30 @@
 # S.I.N.A — Survival Intelligence & Navigation Assistant
 
-An offline-first personal command platform for Ubuntu/Debian Linux. Bootstrap once from the terminal, then manage everything else from the dashboard.
+An offline-first personal command platform that is **Linux-first** and now supports **Windows through WSL2 Ubuntu**. Bootstrap once from the terminal, then manage normal setup and operations from the dashboard.
 
 ---
 
-## What S.I.N.A Is
+## Supported Platforms
 
-S.I.N.A is an **installable local platform** — not a cloud service, not a live-boot OS, not a toy. It runs on your existing Ubuntu or Debian machine and gives you a unified command center for:
+### Supported now
+- **Linux native (primary):** Ubuntu 22.04+ and Debian 12+
+- **Windows (supported path):** Windows 10/11 with **WSL2 + Ubuntu** (run S.I.N.A inside WSL)
 
-- **Local AI chat** — RAG over your indexed documents, multiple personas, full model management
-- **Knowledge library** — PDFs, manuals, guides, web archives, Wikipedia (via Kiwix/ZIM)
-- **Offline maps** — Regional tile packs with custom markers and emergency overlays
-- **Personal vault** — Notes, checklists, contacts, emergency procedures
-- **Download manager** — Tiered content catalog with resume, checksum, and auto-import
-- **Import pipeline** — Drop files into a watched folder; auto-indexed and searchable
-- **Unified search** — Keyword and semantic search across all content
-- **Emergency packs** — Structured survival, medical, power, comms references with readiness scoring
-- **System status** — Storage, AI health, module lifecycle, background job log
-- **Settings** — Data paths, AI runtime, indexing, LAN exposure — all from the UI
+### Not yet fully supported
+- **Native Windows without WSL2** (future/experimental path)
+- **macOS**
 
-All features work fully offline after initial setup.
+S.I.N.A remains Linux-first in architecture and runtime assumptions. Windows support is intentionally added through the safer WSL2 path first.
 
 ---
 
 ## Core Product Rule
 
-> **After `bash scripts/bootstrap.sh` completes, the terminal is done.**
+> **After `bash scripts/bootstrap.sh` completes, terminal work should be minimal.**
 >
-> Installing AI models, registering maps, configuring content packs, managing downloads, and adjusting settings are all done from inside the S.I.N.A dashboard.
+> Install AI models, maps, knowledge packs, and manage runtime/settings from the dashboard.
 
-There is no `ollama pull`. No `docker compose --profile ... up -d` in the normal workflow. The dashboard owns the lifecycle of every managed component.
+S.I.N.A is not a cloud service, not an operating system, and not cloud-dependent for core functionality.
 
 ---
 
@@ -37,17 +32,16 @@ There is no `ollama pull`. No `docker compose --profile ... up -d` in the normal
 
 | Component | Minimum | Recommended |
 |-----------|---------|-------------|
-| OS | Ubuntu 22.04, Debian 12 | Ubuntu 24.04 |
+| OS | Ubuntu 22.04 / Debian 12 | Ubuntu 24.04 |
+| Windows Path | WSL2 + Ubuntu | WSL2 + Ubuntu 24.04 |
 | Arch | x86_64 | x86_64 |
 | RAM | 4 GB | 8–16 GB |
 | Storage | 20 GB free | 512 GB SSD |
 | Node.js | 20.x | 20.x LTS |
-| Ollama | auto-installed | managed by dashboard |
-| Docker | optional | recommended for tile server |
 
 ---
 
-## Quick Install
+## Quick Install (Linux Native)
 
 ```bash
 git clone https://github.com/sentinel-atlas/s.i.n.a.git
@@ -56,227 +50,110 @@ bash scripts/bootstrap.sh
 bash scripts/start.sh
 ```
 
-Then open: **http://127.0.0.1:3001**
+Open: **http://127.0.0.1:3001**
 
-The setup wizard will guide you through the rest.
+---
 
-### Bootstrap options
+## Quick Install (Windows via WSL2 Ubuntu)
+
+1. Install WSL2 and Ubuntu (see full guide in [`docs/INSTALL.md`](docs/INSTALL.md)).
+2. Open Ubuntu terminal in WSL2.
+3. Clone and run S.I.N.A inside WSL2:
 
 ```bash
-# Custom data directory (external SSD, NAS mount, etc.)
+git clone https://github.com/sentinel-atlas/s.i.n.a.git
+cd s.i.n.a
+bash scripts/bootstrap.sh
+bash scripts/start.sh
+```
+
+4. Open **http://127.0.0.1:3001** in your Windows browser.
+
+> For performance, keep repo + data in WSL Linux filesystem (e.g. `~/s.i.n.a`, `~/.sina/data`) instead of `/mnt/c/...`.
+
+---
+
+## Bootstrap Options
+
+```bash
+# Custom data directory
 bash scripts/bootstrap.sh --data-dir /mnt/ssd/sina-data
 
-# Install Ollama during bootstrap (otherwise install from dashboard)
+# Optional runtime installs
 bash scripts/bootstrap.sh --with-ollama
-
-# Install Docker during bootstrap (required for offline map tile server)
 bash scripts/bootstrap.sh --with-docker
 ```
 
-Bootstrap does exactly these steps, then stops:
-
-1. Verifies OS and architecture
-2. Installs or upgrades Node.js 20+
-3. Installs required system packages
+Bootstrap performs only platform initialization:
+1. Verifies runtime environment (Linux native or WSL2 Linux)
+2. Installs/upgrades Node.js 20+
+3. Installs system packages
 4. Optionally installs Ollama and/or Docker
 5. Creates `.env` from `.env.example`
-6. Runs `npm install` and builds backend + frontend
-7. Creates the data directory structure under `$SINA_DATA_DIR`
-8. Prints the launch URL and handoff message
+6. Installs dependencies + builds backend/frontend
+7. Creates `$SINA_DATA_DIR` directory layout
+
+Then dashboard-first setup takes over.
 
 ---
 
-## First Launch Experience
+## Dashboard-First Journey (Linux + WSL2)
 
-When you open S.I.N.A for the first time, the **Setup Wizard** runs automatically:
+1. Clone repo
+2. Run bootstrap once
+3. Start S.I.N.A
+4. Open dashboard
+5. Complete setup wizard and manage everything from the UI
 
-1. **Storage** — Confirm data directory, check available disk space
-2. **AI Runtime** — Detect Ollama, install it if missing, check available RAM
-3. **AI Models** — Browse and install recommended chat + embedding models with one click
-4. **Knowledge Packs** — Choose content tiers (Essential / Standard / Comprehensive) for Wikipedia, medical references, survival guides
-5. **Maps** — Select regional map packs to download and register
-6. **Watched Folders** — Set up auto-import directories
-7. **Network** — Configure LAN exposure (local-only by default)
-8. **Done** — All modules show readiness status; go to Dashboard
-
-You can skip any step and return to it later from Settings or the relevant module.
-
----
-
-## Typical Setup Flow (No Terminal After Bootstrap)
-
-```
-bootstrap.sh           → Platform initialized
-    │
-    ▼
-Dashboard opens        → Setup wizard detects first run
-    │
-    ▼
-AI Setup               → Install Ollama + pull llama3.2 + nomic-embed-text
-    │                    (from inside the dashboard, no terminal)
-    ▼
-Knowledge Packs        → Download Wikipedia mini (8.5 GB), medical refs, survival guides
-    │
-    ▼
-Maps                   → Download Ontario / Toronto / Canada tile packs
-    │
-    ▼
-Vault                  → Create emergency contacts, procedures, checklists
-    │
-    ▼
-Import                 → Drop in personal documents; auto-indexed and searchable
-    │
-    ▼
-AI Chat                → Chat with full RAG context over all indexed content
-```
-
----
-
-## Modules
-
-| Module | Description |
-|--------|-------------|
-| **Dashboard** | System health, module readiness, quick actions, storage, download status |
-| **AI** | Local chat with RAG, personas, model management, install recommendations |
-| **Library** | Knowledge base, collections, Kiwix/ZIM packs, document indexing |
-| **Maps** | Offline tile maps, region pack manager, custom markers, emergency overlays |
-| **Vault** | Notes, checklists, contacts, emergency guides |
-| **Tools** | Managed utility integrations with installation and health checks |
-| **Downloads** | Tiered install catalog, resumable downloads, checksum verification |
-| **Import** | Drag-and-drop file ingestion, watched folder auto-import |
-| **Search** | Unified keyword and semantic search across all content |
-| **Emergency** | Survival pack index with readiness scoring and quick-access mode |
-| **Status** | System health, resource monitoring, module lifecycle, job logs |
-| **Settings** | Data paths, AI config, LAN exposure controls, indexing options |
-
----
-
-## Data Philosophy
-
-All data lives in `$SINA_DATA_DIR` (default: `~/.sina/data`). The entire database is a single SQLite file:
-
-```
-$SINA_DATA_DIR/db/sina.db
-```
-
-This file contains all metadata, settings, vault items, conversations, AI embeddings, and import logs. Back it up and you can restore everything. No cloud sync. No accounts. No telemetry.
-
-See [Data Layout](docs/DATA_LAYOUT.md) for the full directory structure.
-
----
-
-## Offline-First
-
-S.I.N.A is designed to operate with no internet connection after initial content download:
-
-- AI inference runs locally via Ollama (no external API calls)
-- Map tiles served from local `.mbtiles` / `.pmtiles` files
-- Knowledge packs stored as local ZIM files (Kiwix-compatible)
-- All search is local (SQLite FTS5 + cosine similarity on local embeddings)
-- Settings changes, vault edits, and imports never leave the machine
+No terminal-heavy model setup or manual map registration is required for normal operation.
 
 ---
 
 ## Networking
 
-By default S.I.N.A binds to `127.0.0.1` — only accessible from the local machine.
-
-To expose on your LAN (e.g. to access from a phone or tablet on the same network):
-
-1. Go to **Settings → Network**
-2. Toggle **LAN Exposure**
-3. S.I.N.A will display your device IP and the access URL
-4. One-click revert returns to localhost-only
-
-The `.env` `BIND_ADDRESS` variable controls this. The dashboard manages it — no manual editing required.
+- Default bind: `127.0.0.1` (local-only)
+- Optional LAN exposure can be enabled in **Settings → Network**
+- In WSL2 mode, `scripts/start.sh` prints Windows-host browser guidance
 
 ---
 
-## Running as a Service
+## Service Notes
 
-To start S.I.N.A automatically on boot:
-
-```bash
-# Create systemd service
-sudo tee /etc/systemd/system/sina.service > /dev/null <<EOF
-[Unit]
-Description=S.I.N.A Command Center
-After=network.target
-
-[Service]
-Type=simple
-User=$USER
-WorkingDirectory=$(pwd)
-EnvironmentFile=$(pwd)/.env
-ExecStart=/usr/bin/node app/backend/dist/index.js
-Restart=on-failure
-RestartSec=5
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
-sudo systemctl daemon-reload
-sudo systemctl enable sina
-sudo systemctl start sina
-```
+Systemd service setup is available for Linux-native deployments. For WSL2, interactive/session-based startup is recommended unless you have a custom WSL service strategy.
 
 ---
 
-## Advanced / Manual Operations
-
-These are **not required** for normal use. They're here for recovery, debugging, or advanced deployments.
+## Advanced / Recovery Commands
 
 ```bash
-# Manually check service health
 bash scripts/health-check.sh
-
-# Start in development mode (hot reload)
 bash scripts/dev.sh
-
-# Rebuild after pulling updates
 git pull && npm install && npm run build
+```
 
-# Start optional map tile server (if not using dashboard)
+Optional services:
+
+```bash
 docker compose --profile maps up -d
-
-# Start ChromaDB vector store (for large-scale semantic search)
 docker compose --profile vector up -d
-
-# Manually pull an AI model (if Ollama dashboard install fails)
-ollama pull llama3.2
-
-# SQLite backup
-cp $SINA_DATA_DIR/db/sina.db ~/sina-backup-$(date +%Y%m%d).db
 ```
 
 ---
 
-## Project Structure
+## Native Windows (Future Path)
 
-```
-/
-├── app/
-│   ├── frontend/        Next.js + React dashboard
-│   ├── backend/         Node.js + Express API + services
-│   └── shared/          TypeScript types shared across frontend/backend
-├── registry/            Tiered content catalog, model registry, map registry
-├── scripts/             bootstrap.sh, start.sh, dev.sh, health-check.sh
-├── docs/                Architecture, install guide, data layout
-├── docker-compose.yml   Optional: tile server, ChromaDB vector store
-└── data/                Runtime data (gitignored, created by bootstrap)
-```
+`scripts/bootstrap.ps1` and `scripts/start.ps1` are placeholders only and currently point users to the supported WSL2 workflow. They do **not** indicate full native Windows support.
 
 ---
 
-## Documentation
+## Data Philosophy
 
-- [Install Guide](docs/INSTALL.md)
-- [Architecture](docs/ARCHITECTURE.md)
-- [Data Layout](docs/DATA_LAYOUT.md)
+All data stays local in `$SINA_DATA_DIR` (default `~/.sina/data`). Main metadata store:
 
----
+```text
+$SINA_DATA_DIR/db/sina.db
+```
 
-## License
+No cloud account requirement, no forced telemetry, and offline operation after initial asset download.
 
-Personal use. See LICENSE.
+See [docs/DATA_LAYOUT.md](docs/DATA_LAYOUT.md).

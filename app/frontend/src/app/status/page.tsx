@@ -31,6 +31,13 @@ export default function StatusPage() {
   const storage = status?.storage as { used_bytes: number; total_bytes: number; free_bytes: number; breakdown: Record<string, number> } | undefined;
   const ai = status?.ai as { ollama_available: boolean; models: { id: string }[] } | undefined;
   const network = status?.network as { lan_exposed: boolean; bind_address: string } | undefined;
+  const runtimePlatform = status?.runtime_platform as {
+    id: string;
+    label: string;
+    is_wsl2: boolean;
+    support_tier: string;
+    supported_now: boolean;
+  } | undefined;
   const storagePct = storage ? Math.round(storage.used_bytes / Math.max(storage.total_bytes, 1) * 100) : 0;
   const memPct = status ? Math.round((1 - (status.mem_free as number) / (status.mem_total as number)) * 100) : 0;
 
@@ -56,6 +63,7 @@ export default function StatusPage() {
             </MetricCard>
             <MetricCard icon={<Cpu className="w-4 h-4" />} label="System" value={`${status.cpu_count} CPUs`}>
               <div className="text-xs text-text-muted">{status.platform as string} · {status.arch as string}</div>
+              {runtimePlatform && <div className="text-xs text-text-muted">{runtimePlatform.label}</div>}
               <div className="text-xs text-text-muted">Uptime {Math.round((status.uptime as number) / 3600)}h</div>
             </MetricCard>
             <MetricCard icon={<Network className="w-4 h-4" />} label="Network" value={network?.lan_exposed ? 'LAN Exposed' : 'Local Only'}>

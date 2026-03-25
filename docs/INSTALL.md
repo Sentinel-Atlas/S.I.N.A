@@ -1,191 +1,163 @@
 # S.I.N.A Install Guide
 
-## Supported Platforms
+This guide documents installation in the supported order:
+1. Linux native (primary)
+2. Windows via WSL2 Ubuntu (supported)
+3. Native Windows (future/experimental)
 
-- Ubuntu 22.04 LTS and newer
-- Debian 12 (Bookworm) and newer
-- Architecture: x86_64
-
----
-
-## The Core Rule
-
-> **Terminal work ends after `bash scripts/start.sh`.**
->
-> Everything else — AI model installation, knowledge pack downloads, map configuration,
-> vault setup, and settings — is done from the **S.I.N.A dashboard**.
+S.I.N.A remains **offline-first** and **dashboard-first** after bootstrap.
 
 ---
 
-## Step 1: Clone the Repository
+## Platform Support Matrix
+
+### Supported now
+- Ubuntu 22.04+ (native)
+- Debian 12+ (native)
+- Windows 10/11 **via WSL2 + Ubuntu**
+
+### Not yet fully supported
+- Native Windows without WSL2
+- macOS
+
+---
+
+## Core Rule
+
+> Run bootstrap + start once from terminal, then complete setup in the dashboard.
+
+Normal users should not need terminal-heavy post-install commands for models/maps/content.
+
+---
+
+## A) Linux Native Install (Primary)
+
+### 1) Clone
 
 ```bash
 git clone https://github.com/sentinel-atlas/s.i.n.a.git
 cd s.i.n.a
 ```
 
----
-
-## Step 2: Run Bootstrap
-
-The bootstrap script initializes the platform. It installs Node.js, builds the project, and creates data directories. It does **not** pull AI models or configure content — the dashboard does that.
+### 2) Bootstrap
 
 ```bash
-# Basic install (data stored in ~/.sina/data)
 bash scripts/bootstrap.sh
+```
 
-# Custom data directory (external SSD, NAS mount, etc.)
+Optional flags:
+
+```bash
 bash scripts/bootstrap.sh --data-dir /mnt/ssd/sina-data
-
-# Also install Ollama during bootstrap (optional — can also install from dashboard)
 bash scripts/bootstrap.sh --with-ollama
-
-# Also install Docker (required for offline map tile server)
 bash scripts/bootstrap.sh --with-docker
 ```
 
-Bootstrap does exactly these steps:
-
-1. Verify OS and architecture (Ubuntu 22.04+ or Debian 12+, x86_64)
-2. Install or upgrade Node.js 20+
-3. Install system packages
-4. Optionally install Ollama and/or Docker
-5. Copy `.env.example` → `.env`
-6. Run `npm install`
-7. Build backend and frontend
-8. Create the full data directory structure
-
----
-
-## Step 3: Start S.I.N.A
+### 3) Start
 
 ```bash
 bash scripts/start.sh
 ```
 
-Open your browser at: **http://127.0.0.1:3001**
+Open: **http://127.0.0.1:3001**
 
-**The Setup Wizard launches automatically on first visit.**
+### 4) Finish setup in dashboard
 
----
-
-## Step 4: Complete Setup in the Dashboard
-
-The Setup Wizard guides you through:
-
-1. **Storage** — Confirm data directory and available disk space
-2. **AI Runtime** — Detect Ollama, install it if missing
-3. **AI Models** — Install recommended chat and embedding models (no `ollama pull`)
-4. **Knowledge Packs** — Choose content tiers for Wikipedia, medical, and survival references
-5. **Maps** — Select regional map packs to download
-6. **Watched Folders** — Configure auto-import directories
-7. **Network** — Set LAN exposure defaults
-8. **Complete** — All modules show readiness status
-
-Each step can be skipped and revisited from Settings later.
+Setup Wizard handles storage checks, AI runtime/models, knowledge packs, maps, import watchers, and network defaults.
 
 ---
 
-## Configuration (Optional)
+## B) Windows Install via WSL2 Ubuntu (Supported)
 
-If you need to change defaults before first run, edit `.env`:
+### 1) Windows prerequisites
+
+- Windows 10 or 11 with virtualization enabled
+- WSL2 installed
+- Ubuntu distro installed in WSL (Ubuntu 22.04+ recommended)
+
+Install/upgrade WSL from PowerShell (Admin):
+
+```powershell
+wsl --install
+wsl --set-default-version 2
+```
+
+Then install Ubuntu from Microsoft Store (or `wsl --install -d Ubuntu`).
+
+### 2) Open Ubuntu (WSL2) terminal
+
+All S.I.N.A commands run inside WSL terminal, not PowerShell/CMD.
+
+### 3) Clone and install inside WSL filesystem
 
 ```bash
-SINA_DATA_DIR=/opt/sina/data   # Default: ~/.sina/data
+cd ~
+git clone https://github.com/sentinel-atlas/s.i.n.a.git
+cd s.i.n.a
+bash scripts/bootstrap.sh
+bash scripts/start.sh
+```
+
+Open from Windows browser: **http://127.0.0.1:3001**
+
+### 4) Data/storage guidance for WSL
+
+- Prefer Linux-side paths (`~/...`, `~/.sina/data`) for repo and `SINA_DATA_DIR`.
+- Avoid `/mnt/c/...` for active project/data to reduce file-watch and I/O overhead.
+- External SSDs can be used if mounted in WSL and writable by your Linux user.
+
+### 5) WSL caveats
+
+- Docker features depend on Docker Desktop WSL integration or Docker-in-WSL setup.
+- Ollama may run either in WSL2 or Windows host; ensure `OLLAMA_HOST` points to reachable endpoint.
+- If file watching is slow, move repository and watched imports to WSL-native filesystem.
+- LAN exposure still works, but access may depend on Windows firewall/network profile.
+
+---
+
+## C) Native Windows Without WSL2 (Future / Experimental)
+
+Current PowerShell scripts are placeholders:
+- `scripts/bootstrap.ps1`
+- `scripts/start.ps1`
+
+These do not provide production native support yet. Use WSL2 path today.
+
+---
+
+## Optional Configuration
+
+Edit `.env` (or use dashboard settings):
+
+```bash
+SINA_DATA_DIR=~/.sina/data
 BACKEND_PORT=3001
 BIND_ADDRESS=127.0.0.1
 OLLAMA_HOST=http://127.0.0.1:11434
-OLLAMA_DEFAULT_MODEL=llama3.2
-OLLAMA_EMBED_MODEL=nomic-embed-text
-```
-
-All of these settings can also be changed at runtime in **Settings** inside the dashboard.
-
----
-
-## Running as a Service (Systemd)
-
-To start S.I.N.A automatically on boot:
-
-```bash
-sudo tee /etc/systemd/system/sina.service > /dev/null <<EOF
-[Unit]
-Description=S.I.N.A Command Center
-After=network.target
-
-[Service]
-Type=simple
-User=$USER
-WorkingDirectory=$(pwd)
-EnvironmentFile=$(pwd)/.env
-ExecStart=/usr/bin/node app/backend/dist/index.js
-Restart=on-failure
-RestartSec=5
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
-sudo systemctl daemon-reload
-sudo systemctl enable sina
-sudo systemctl start sina
 ```
 
 ---
 
-## Running with Docker (Optional Services)
+## Linux Service Setup (Optional)
 
-Docker is used only for optional supporting services. Start them from the **Tools** module or manually:
-
-```bash
-# Offline map tile server (serves .mbtiles from data/maps/)
-docker compose --profile maps up -d
-
-# ChromaDB vector store (for large-scale semantic search)
-docker compose --profile vector up -d
-```
-
-These are not required for core functionality.
-
----
-
-## Updating
-
-```bash
-git pull
-npm install
-npm run build
-bash scripts/start.sh
-```
-
-Or use the **Updates** section in the dashboard to check for available updates.
+For Linux-native installs you can configure systemd for startup-on-boot. This is optional and not required for WSL usage.
 
 ---
 
 ## Troubleshooting
 
-**Setup wizard doesn't appear**
-- It appears automatically on first visit. If it doesn't, go to **Settings → Setup** and click Reset Wizard.
+### App does not open
+- Confirm start script is running: `bash scripts/start.sh`
+- Confirm backend port in `.env` and terminal output
 
-**Backend won't start**
-- Check Node.js version: `node --version` (must be v20+)
-- Check `.env` exists and `SINA_DATA_DIR` is writable
+### AI unavailable
+- Check AI page in dashboard
+- Verify Ollama endpoint: `curl http://127.0.0.1:11434/api/tags`
 
-**AI not available**
-- Go to the **AI** module — the readiness banner shows what's missing
-- Or check: `curl http://127.0.0.1:11434/api/tags`
+### WSL browser access fails
+- Try opening `http://127.0.0.1:3001` directly in Windows browser
+- Confirm no local firewall/security tool is blocking localhost forwarding
 
-**Maps not showing**
-- Place `.mbtiles` files in `$SINA_DATA_DIR/maps/`
-- Use Maps → Regions → Scan to register them
-- Start tile server: `docker compose --profile maps up -d`
+### Slow imports on WSL
+- Move repo + watched folders from `/mnt/c/...` to WSL Linux filesystem
 
-**Slow indexing**
-- Indexing runs in the background — check the Import log
-- Large PDFs take time to parse
-- Disable semantic embeddings in Settings → Indexing for faster throughput
-
-**Knowledge packs not loading**
-- Check the Library → Knowledge Packs tab
-- ZIM files must be in `$SINA_DATA_DIR/kiwix/`
-- Use Library → Scan to register discovered files

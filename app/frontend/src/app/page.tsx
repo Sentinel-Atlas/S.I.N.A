@@ -2,18 +2,19 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
-import { formatBytes, formatRelative } from '@/lib/utils';
+import { formatBytes } from '@/lib/utils';
 import { StatusDot } from '@/components/shared/StatusDot';
 import { Progress } from '@/components/shared/Progress';
 import { Button } from '@/components/shared/Button';
 import {
   Brain, Library, Map, Shield, Wrench, Download,
   FolderInput, Search, AlertTriangle, Activity,
-  MessageSquare, RefreshCw, Wifi, WifiOff, HardDrive,
-  ChevronRight,
+  MessageSquare, RefreshCw, Wifi, WifiOff,
+  ChevronRight, Sparkles, BookOpen, Bell,
 } from 'lucide-react';
-import type { SystemHealth } from '@sina/shared';
+import type { SystemHealth, SetupState, UpdateCheckResult } from '@sina/shared';
 
 interface Stats {
   content: { total: number; indexed: number; failed: number; pending: number };
@@ -24,16 +25,17 @@ interface Stats {
 }
 
 const MODULE_CARDS = [
-  { href: '/ai',        label: 'AI Chat',        icon: Brain,         desc: 'Local AI with RAG',          key: 'ai' },
-  { href: '/library',   label: 'Library',        icon: Library,       desc: 'Knowledge & documents',       key: 'library' },
-  { href: '/maps',      label: 'Maps',           icon: Map,           desc: 'Offline geographic data',     key: 'maps' },
-  { href: '/vault',     label: 'Vault',          icon: Shield,        desc: 'Notes, guides & contacts',    key: 'vault' },
-  { href: '/tools',     label: 'Tools',          icon: Wrench,        desc: 'Utilities & launchers',       key: 'tools' },
-  { href: '/downloads', label: 'Downloads',      icon: Download,      desc: 'Install & manage assets',     key: 'downloads' },
-  { href: '/imports',   label: 'Import',         icon: FolderInput,   desc: 'Ingest files & content',      key: 'imports' },
-  { href: '/search',    label: 'Search',         icon: Search,        desc: 'Search all local content',    key: 'search' },
-  { href: '/emergency', label: 'Emergency',      icon: AlertTriangle, desc: 'Critical procedures & packs', key: 'emergency' },
-  { href: '/status',    label: 'System',         icon: Activity,      desc: 'Health & status overview',    key: 'system' },
+  { href: '/ai',        label: 'AI Chat',        icon: Brain,         desc: 'Local AI with RAG',            key: 'ai' },
+  { href: '/library',   label: 'Library',        icon: Library,       desc: 'Knowledge & documents',         key: 'library' },
+  { href: '/library',   label: 'Knowledge Packs', icon: BookOpen,     desc: 'Kiwix/ZIM offline references',  key: 'kiwix' },
+  { href: '/maps',      label: 'Maps',           icon: Map,           desc: 'Offline geographic data',       key: 'maps' },
+  { href: '/vault',     label: 'Vault',          icon: Shield,        desc: 'Notes, guides & contacts',      key: 'vault' },
+  { href: '/tools',     label: 'Tools',          icon: Wrench,        desc: 'Utilities & launchers',         key: 'tools' },
+  { href: '/downloads', label: 'Downloads',      icon: Download,      desc: 'Install & manage assets',       key: 'downloads' },
+  { href: '/imports',   label: 'Import',         icon: FolderInput,   desc: 'Ingest files & content',        key: 'imports' },
+  { href: '/search',    label: 'Search',         icon: Search,        desc: 'Search all local content',      key: 'search' },
+  { href: '/emergency', label: 'Emergency',      icon: AlertTriangle, desc: 'Critical procedures & packs',   key: 'emergency' },
+  { href: '/status',    label: 'System',         icon: Activity,      desc: 'Health & status overview',      key: 'system' },
 ];
 
 const QUICK_ACTIONS = [
@@ -54,17 +56,29 @@ function moduleStatus(health: SystemHealth, key: string): 'online' | 'warning' |
 }
 
 export default function DashboardPage() {
+  const router = useRouter();
   const [health, setHealth] = useState<SystemHealth | null>(null);
   const [stats, setStats] = useState<Stats | null>(null);
+  const [setupState, setSetupState] = useState<SetupState | null>(null);
+  const [updateSummary, setUpdateSummary] = useState<{ checked_at: string | null; update_count: number | null } | null>(null);
   const [loading, setLoading] = useState(true);
 
   const load = () => {
     Promise.all([
       api.dashboard.health(),
       api.dashboard.stats(),
-    ]).then(([h, s]) => {
+      api.setup.state().catch(() => null),
+      api.updates.status().catch(() => null),
+    ]).then(([h, s, setup, updates]) => {
       setHealth(h);
       setStats(s as unknown as Stats);
+      setSetupState(setup);
+      setUpdateSummary(updates);
+
+      // Redirect to setup wizard if not completed
+      if (setup && !setup.completed) {
+        router.push('/setup');
+      }
     }).catch(console.error).finally(() => setLoading(false));
   };
 
@@ -81,9 +95,15 @@ export default function DashboardPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold text-text-primary tracking-tight">Command Center</h1>
-          <p className="text-sm text-text-muted mt-0.5">Personal offline operations dashboard</p>
+          <p className="text-sm text-text-muted mt-0.5">Survival Intelligence & Navigation Assistant</p>
         </div>
         <div className="flex items-center gap-3">
+          {updateSummary?.update_count != null && updateSummary.update_count > 0 && (
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-status-warn/10 border border-status-warn/30 text-status-warn text-xs">
+              <Bell className="w-3 h-3" />
+              {updateSummary.update_count} update{updateSummary.update_count !== 1 ? 's' : ''}
+            </div>
+          )}
           {health && (
             <StatusDot
               status={health.status === 'healthy' ? 'online' : health.status === 'degraded' ? 'warning' : 'error'}
@@ -95,6 +115,42 @@ export default function DashboardPage() {
           </Button>
         </div>
       </div>
+
+      {/* Setup incomplete banner */}
+      {setupState && !setupState.completed && (
+        <div className="card border-accent-warm/40 bg-accent-warm/5 p-4">
+          <div className="flex items-start gap-4">
+            <div className="w-9 h-9 rounded-lg bg-accent-warm/20 border border-accent-warm/30 flex items-center justify-center flex-shrink-0">
+              <Sparkles className="w-5 h-5 text-accent-warm" />
+            </div>
+            <div className="flex-1">
+              <div className="text-text-primary font-medium mb-1">S.I.N.A setup is not complete</div>
+              <div className="text-text-muted text-sm">
+                The Setup Wizard will configure AI models, knowledge packs, maps, and preferences.
+                No terminal commands required.
+              </div>
+            </div>
+            <Link href="/setup" className="btn-primary text-sm whitespace-nowrap flex-shrink-0">
+              Continue Setup →
+            </Link>
+          </div>
+        </div>
+      )}
+
+      {/* AI not available banner */}
+      {health && !health.ai.runtime_available && setupState?.completed && (
+        <div className="card border-status-warn/30 bg-status-warn/5 p-4">
+          <div className="flex items-center gap-4">
+            <div className="flex-1">
+              <div className="text-text-primary font-medium">AI runtime not available</div>
+              <div className="text-text-muted text-sm">Ollama is not running. AI chat, RAG search, and embeddings are unavailable.</div>
+            </div>
+            <Link href="/ai" className="btn-secondary text-sm whitespace-nowrap">
+              AI Settings →
+            </Link>
+          </div>
+        </div>
+      )}
 
       {/* System overview strip */}
       {health && (

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { api, startChatStream } from '@/lib/api';
-import { formatRelative } from '@/lib/utils';
+import { formatRelative, formatBytes } from '@/lib/utils';
 import { Button } from '@/components/shared/Button';
 import { Badge } from '@/components/shared/Badge';
 import { EmptyState } from '@/components/shared/EmptyState';
@@ -10,7 +10,8 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import {
   Brain, Plus, Send, Trash2, MessageSquare, BookOpen,
-  Shield, Wrench, FileText, Map, ChevronDown, X, ExternalLink,
+  Shield, Wrench, FileText, Map, ChevronDown, X,
+  Download, AlertTriangle, CheckCircle2, Cpu, HardDrive,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Conversation, ChatMessage, Persona, AIModel, SourceReference } from '@sina/shared';
@@ -22,6 +23,79 @@ const PERSONA_ICONS: Record<string, React.ReactNode> = {
   summarizer: <FileText className="w-4 h-4" />,
   navigator:  <Map className="w-4 h-4" />,
 };
+
+// ─── Recommended models ───────────────────────────────────────────────────────
+
+const RECOMMENDED_MODELS = [
+  { id: 'llama3.2', name: 'Llama 3.2 (3B)', size: '~2 GB', min_ram_gb: 4, type: 'chat', recommended: true },
+  { id: 'llama3.2:1b', name: 'Llama 3.2 (1B)', size: '~900 MB', min_ram_gb: 2, type: 'chat', recommended: false },
+  { id: 'mistral:7b', name: 'Mistral 7B', size: '~4 GB', min_ram_gb: 8, type: 'chat', recommended: false },
+  { id: 'nomic-embed-text', name: 'nomic-embed-text', size: '~300 MB', min_ram_gb: 1, type: 'embed', recommended: true },
+];
+
+// ─── AI Readiness Banner ──────────────────────────────────────────────────────
+
+function AIReadinessBanner({
+  models,
+  systemRam,
+  onPull,
+  pullingModel,
+}: {
+  models: AIModel[];
+  systemRam: number;
+  onPull: (modelId: string) => void;
+  pullingModel: string | null;
+}) {
+  const hasChatModel = models.some(m => !m.id.includes('embed') && !m.id.includes('nomic'));
+  const hasEmbedModel = models.some(m => m.id.includes('embed') || m.id.includes('nomic'));
+
+  if (hasChatModel && hasEmbedModel) return null;
+
+  const ramGb = Math.round(systemRam / (1024 ** 3));
+  const recommended = RECOMMENDED_MODELS.filter(m => {
+    if (m.type === 'embed') return !hasEmbedModel;
+    if (m.type === 'chat') return !hasChatModel;
+    return false;
+  }).filter(m => ramGb === 0 || ramGb >= m.min_ram_gb);
+
+  return (
+    <div className="border-b border-border bg-bg-surface px-4 py-3">
+      <div className="flex items-start gap-3">
+        <AlertTriangle className="w-4 h-4 text-status-warn mt-0.5 flex-shrink-0" />
+        <div className="flex-1">
+          <div className="text-sm font-medium text-text-primary mb-2">
+            {!hasChatModel ? 'No chat model installed' : 'Embedding model missing — semantic search disabled'}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {recommended.map(model => (
+              <button
+                key={model.id}
+                onClick={() => onPull(model.id)}
+                disabled={pullingModel !== null}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded bg-bg-overlay border border-border hover:border-accent/40 text-xs transition-colors disabled:opacity-50"
+              >
+                {pullingModel === model.id ? (
+                  <span className="w-3 h-3 border border-accent border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <Download className="w-3 h-3 text-accent" />
+                )}
+                <span className="text-text-secondary">{model.name}</span>
+                <span className="text-text-muted">{model.size}</span>
+                {model.recommended && <span className="text-accent text-2xs">recommended</span>}
+              </button>
+            ))}
+          </div>
+          {ramGb > 0 && ramGb < 4 && (
+            <div className="text-2xs text-text-muted mt-1.5 flex items-center gap-1">
+              <Cpu className="w-3 h-3" />
+              {ramGb} GB RAM detected — showing models under 4 GB only
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function AIPage() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -36,6 +110,8 @@ export default function AIPage() {
   const [streamingContent, setStreamingContent] = useState('');
   const [streamingSources, setStreamingSources] = useState<SourceReference[]>([]);
   const [showSidebar, setShowSidebar] = useState(true);
+  const [pullingModel, setPullingModel] = useState<string | null>(null);
+  const [systemRam, setSystemRam] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const cancelRef = useRef<(() => void) | null>(null);
@@ -45,13 +121,46 @@ export default function AIPage() {
       api.ai.personas(),
       api.ai.models(),
       api.ai.conversations(),
-    ]).then(([p, m, c]) => {
+      api.setup.probe().catch(() => null),
+    ]).then(([p, m, c, probe]) => {
       setPersonas(p);
       setModels(m);
       setConversations(c);
       if (m.length > 0) setSelectedModel(m[0].id);
+      if (probe) {
+        const sys = (probe as Record<string, unknown>).system as Record<string, number> | undefined;
+        if (sys?.total_ram_bytes) setSystemRam(sys.total_ram_bytes);
+      }
     }).catch(console.error);
   }, []);
+
+  const pullModel = useCallback(async (modelId: string) => {
+    if (pullingModel) return;
+    setPullingModel(modelId);
+    try {
+      // Stream pull progress via SSE
+      await new Promise<void>((resolve, reject) => {
+        const es = new EventSource(`/api/ai/models/pull?model=${encodeURIComponent(modelId)}`);
+        es.onmessage = (e) => {
+          try {
+            const evt = JSON.parse(e.data);
+            if (evt.status === 'success' || evt.done) {
+              es.close();
+              resolve();
+            }
+          } catch { /* continue */ }
+        };
+        es.onerror = () => { es.close(); reject(new Error('Pull failed')); };
+      });
+      // Refresh model list
+      const m = await api.ai.models();
+      setModels(m);
+    } catch {
+      // silently continue — user can retry
+    } finally {
+      setPullingModel(null);
+    }
+  }, [pullingModel]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -181,6 +290,40 @@ export default function AIPage() {
             </div>
           </div>
 
+          {/* Model selector + quick install */}
+          <div className="p-3 border-b border-border">
+            <div className="text-2xs text-text-muted uppercase tracking-wider mb-2">Model</div>
+            {models.length > 0 ? (
+              <select
+                value={selectedModel}
+                onChange={e => setSelectedModel(e.target.value)}
+                className="input-base w-full text-xs py-1.5 h-8"
+              >
+                {models.map(m => (
+                  <option key={m.id} value={m.id}>
+                    {m.id} ({formatBytes(m.size_bytes)})
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <div className="text-xs text-text-muted">No models installed</div>
+            )}
+
+            {/* Quick install if no chat model */}
+            {!models.some(m => !m.id.includes('embed') && !m.id.includes('nomic')) && (
+              <button
+                onClick={() => pullModel('llama3.2')}
+                disabled={pullingModel !== null}
+                className="mt-2 w-full flex items-center justify-center gap-1.5 px-2 py-1.5 rounded border border-dashed border-accent/30 text-xs text-accent hover:bg-accent/5 transition-colors disabled:opacity-50"
+              >
+                {pullingModel === 'llama3.2' ? (
+                  <span className="w-3 h-3 border border-accent border-t-transparent rounded-full animate-spin" />
+                ) : <Download className="w-3 h-3" />}
+                Install llama3.2
+              </button>
+            )}
+          </div>
+
           {/* Conversation list */}
           <div className="flex-1 overflow-y-auto p-2 space-y-0.5">
             {conversations.length === 0 && (
@@ -215,6 +358,14 @@ export default function AIPage() {
       {/* Main chat area */}
       <div className="flex-1 flex flex-col min-w-0">
 
+        {/* AI readiness banner */}
+        <AIReadinessBanner
+          models={models}
+          systemRam={systemRam}
+          onPull={pullModel}
+          pullingModel={pullingModel}
+        />
+
         {/* Chat header */}
         <div className="px-4 py-3 border-b border-border flex items-center gap-3">
           <button onClick={() => setShowSidebar(!showSidebar)} className="text-text-muted hover:text-text-primary">
@@ -230,14 +381,10 @@ export default function AIPage() {
               <span className="text-sm text-text-muted">Select or start a conversation</span>
             )}
           </div>
-          {models.length > 0 && (
-            <select
-              value={selectedModel}
-              onChange={e => setSelectedModel(e.target.value)}
-              className="input-base w-auto text-xs py-1 h-7"
-            >
-              {models.map(m => <option key={m.id} value={m.id}>{m.id}</option>)}
-            </select>
+          {selectedModel && (
+            <div className="text-xs text-text-muted font-mono border border-border rounded px-2 py-1">
+              {selectedModel}
+            </div>
           )}
         </div>
 

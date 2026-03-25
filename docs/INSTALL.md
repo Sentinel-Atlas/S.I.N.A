@@ -8,6 +8,15 @@
 
 ---
 
+## The Core Rule
+
+> **Terminal work ends after `bash scripts/start.sh`.**
+>
+> Everything else — AI model installation, knowledge pack downloads, map configuration,
+> vault setup, and settings — is done from the **S.I.N.A dashboard**.
+
+---
+
 ## Step 1: Clone the Repository
 
 ```bash
@@ -19,37 +28,67 @@ cd s.i.n.a
 
 ## Step 2: Run Bootstrap
 
-The bootstrap script installs Node.js, builds the project, and creates data directories.
+The bootstrap script initializes the platform. It installs Node.js, builds the project, and creates data directories. It does **not** pull AI models or configure content — the dashboard does that.
 
 ```bash
 # Basic install (data stored in ~/.sina/data)
 bash scripts/bootstrap.sh
 
-# Custom data directory (external SSD, etc.)
+# Custom data directory (external SSD, NAS mount, etc.)
 bash scripts/bootstrap.sh --data-dir /mnt/ssd/sina-data
 
-# Also install Ollama
+# Also install Ollama during bootstrap (optional — can also install from dashboard)
 bash scripts/bootstrap.sh --with-ollama
 
-# Also install Docker
+# Also install Docker (required for offline map tile server)
 bash scripts/bootstrap.sh --with-docker
 ```
 
-The bootstrap will:
-1. Check OS and architecture
+Bootstrap does exactly these steps:
+
+1. Verify OS and architecture (Ubuntu 22.04+ or Debian 12+, x86_64)
 2. Install or upgrade Node.js 20+
 3. Install system packages
-4. Install Ollama (if --with-ollama)
+4. Optionally install Ollama and/or Docker
 5. Copy `.env.example` → `.env`
 6. Run `npm install`
 7. Build backend and frontend
-8. Create data directory structure
+8. Create the full data directory structure
 
 ---
 
-## Step 3: Configure (Optional)
+## Step 3: Start S.I.N.A
 
-Edit `.env` to customize paths and ports:
+```bash
+bash scripts/start.sh
+```
+
+Open your browser at: **http://127.0.0.1:3001**
+
+**The Setup Wizard launches automatically on first visit.**
+
+---
+
+## Step 4: Complete Setup in the Dashboard
+
+The Setup Wizard guides you through:
+
+1. **Storage** — Confirm data directory and available disk space
+2. **AI Runtime** — Detect Ollama, install it if missing
+3. **AI Models** — Install recommended chat and embedding models (no `ollama pull`)
+4. **Knowledge Packs** — Choose content tiers for Wikipedia, medical, and survival references
+5. **Maps** — Select regional map packs to download
+6. **Watched Folders** — Configure auto-import directories
+7. **Network** — Set LAN exposure defaults
+8. **Complete** — All modules show readiness status
+
+Each step can be skipped and revisited from Settings later.
+
+---
+
+## Configuration (Optional)
+
+If you need to change defaults before first run, edit `.env`:
 
 ```bash
 SINA_DATA_DIR=/opt/sina/data   # Default: ~/.sina/data
@@ -60,69 +99,33 @@ OLLAMA_DEFAULT_MODEL=llama3.2
 OLLAMA_EMBED_MODEL=nomic-embed-text
 ```
 
----
-
-## Step 4: Install AI Models
-
-```bash
-# If Ollama is not yet running:
-ollama serve &
-
-# Chat model (pick one based on available RAM)
-ollama pull llama3.2        # 3B — 4GB RAM needed
-ollama pull llama3.2:1b     # 1B — 2GB RAM needed
-ollama pull mistral:7b      # 7B — 8GB RAM needed
-
-# Embedding model (required for semantic search / RAG)
-ollama pull nomic-embed-text
-```
-
----
-
-## Step 5: Start S.I.N.A
-
-```bash
-bash scripts/start.sh
-```
-
-Open your browser at: **http://127.0.0.1:3001**
-
----
-
-## Step 6: First Use
-
-1. The Dashboard shows system status and module overview
-2. Go to **Downloads** to install content packs
-3. Go to **Import** to drop in your own documents
-4. Go to **AI** to start chatting — select a persona and model
-5. Go to **Maps** to register your offline map files
-6. Go to **Vault** to create notes and emergency guides
+All of these settings can also be changed at runtime in **Settings** inside the dashboard.
 
 ---
 
 ## Running as a Service (Systemd)
 
-Create `/etc/systemd/system/sina.service`:
+To start S.I.N.A automatically on boot:
 
-```ini
+```bash
+sudo tee /etc/systemd/system/sina.service > /dev/null <<EOF
 [Unit]
 Description=S.I.N.A Command Center
 After=network.target
 
 [Service]
 Type=simple
-User=YOUR_USERNAME
-WorkingDirectory=/path/to/s.i.n.a
-EnvironmentFile=/path/to/s.i.n.a/.env
+User=$USER
+WorkingDirectory=$(pwd)
+EnvironmentFile=$(pwd)/.env
 ExecStart=/usr/bin/node app/backend/dist/index.js
 Restart=on-failure
 RestartSec=5
 
 [Install]
 WantedBy=multi-user.target
-```
+EOF
 
-```bash
 sudo systemctl daemon-reload
 sudo systemctl enable sina
 sudo systemctl start sina
@@ -130,20 +133,19 @@ sudo systemctl start sina
 
 ---
 
-## Running with Docker Support
+## Running with Docker (Optional Services)
 
-For optional services (offline maps, ChromaDB vector store):
+Docker is used only for optional supporting services. Start them from the **Tools** module or manually:
 
 ```bash
-# Maps (serves .mbtiles files from data/maps/)
+# Offline map tile server (serves .mbtiles from data/maps/)
 docker compose --profile maps up -d
 
-# Vector search (ChromaDB — for large knowledge bases)
+# ChromaDB vector store (for large-scale semantic search)
 docker compose --profile vector up -d
-
-# All optional services
-docker compose --profile ai --profile maps --profile vector up -d
 ```
+
+These are not required for core functionality.
 
 ---
 
@@ -156,25 +158,34 @@ npm run build
 bash scripts/start.sh
 ```
 
+Or use the **Updates** section in the dashboard to check for available updates.
+
 ---
 
 ## Troubleshooting
 
+**Setup wizard doesn't appear**
+- It appears automatically on first visit. If it doesn't, go to **Settings → Setup** and click Reset Wizard.
+
 **Backend won't start**
-- Check `data/.gitkeep` directory exists
-- Check `.env` has correct `SINA_DATA_DIR`
-- Check Node.js is v20+: `node --version`
+- Check Node.js version: `node --version` (must be v20+)
+- Check `.env` exists and `SINA_DATA_DIR` is writable
 
 **AI not available**
-- Check Ollama is running: `curl http://127.0.0.1:11434/api/tags`
-- Pull a model: `ollama pull llama3.2`
+- Go to the **AI** module — the readiness banner shows what's missing
+- Or check: `curl http://127.0.0.1:11434/api/tags`
 
 **Maps not showing**
 - Place `.mbtiles` files in `$SINA_DATA_DIR/maps/`
-- Use the Maps → Regions → Scan button to register them
-- Start the tile server: `docker compose --profile maps up -d`
+- Use Maps → Regions → Scan to register them
+- Start tile server: `docker compose --profile maps up -d`
 
 **Slow indexing**
-- Indexing is background — check the Import log
-- Large PDFs may take time to parse
-- Disable semantic embeddings in Settings for faster indexing
+- Indexing runs in the background — check the Import log
+- Large PDFs take time to parse
+- Disable semantic embeddings in Settings → Indexing for faster throughput
+
+**Knowledge packs not loading**
+- Check the Library → Knowledge Packs tab
+- ZIM files must be in `$SINA_DATA_DIR/kiwix/`
+- Use Library → Scan to register discovered files

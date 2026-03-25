@@ -24,7 +24,9 @@ Browser (localhost:3001)
 │  │  dashboard / ai /      │  │
 │  │  library / maps /      │  │
 │  │  vault / search /      │  │
-│  │  downloads / system    │  │
+│  │  downloads / system /  │  │
+│  │  kiwix / updates /     │  │
+│  │  setup                 │  │
 │  └────────────────────────┘  │
 │                              │
 │  ┌────────────────────────┐  │
@@ -36,6 +38,8 @@ Browser (localhost:3001)
 │  │  ollamaAdapter         │  │
 │  │  storageMonitor        │  │
 │  │  documentParser        │  │
+│  │  kiwixManager          │  │
+│  │  updateManager         │  │
 │  └────────────────────────┘  │
 │                              │
 │  ┌────────────────────────┐  │
@@ -48,14 +52,23 @@ Browser (localhost:3001)
     │                     │
     ▼                     ▼
 ┌─────────┐         ┌──────────┐
-│ Ollama  │         │ Filesystem│
-│ :11434  │         │ $SINA_DATA│
-│ (native │         │ /models  │
-│  or     │         │ /maps    │
-│  docker)│         │ /knowledge│
-└─────────┘         │ /vault   │
-                    │ /imports │
+│ Ollama  │         │Filesystem│
+│ :11434  │         │$SINA_DATA│
+│ (native │         │/models   │
+│  or     │         │/maps     │
+│  docker)│         │/knowledge│
+└─────────┘         │/vault    │
+                    │/imports  │
+                    │/kiwix    │
                     └──────────┘
+        │
+        ▼
+  ┌───────────┐
+  │ kiwix-    │
+  │ serve     │
+  │ :8888     │
+  │ (optional)│
+  └───────────┘
 ```
 
 ---
@@ -88,7 +101,16 @@ Browser (localhost:3001)
 - Best user experience for local LLMs on Linux
 - Single binary, broad model support, OpenAI-compatible API
 - Handles model download, memory management, GPU acceleration
-- S.I.N.A uses an adapter layer (`ollamaAdapter.ts`) so future runtime support (llama.cpp, etc.) is possible
+- S.I.N.A uses an adapter layer (`ollamaAdapter.ts`) so future runtime support is possible
+- **AI models are installed from the S.I.N.A dashboard** — no `ollama pull` in the normal workflow
+
+### Why Kiwix/ZIM for the knowledge library?
+
+- ZIM is the leading format for large-scale offline reference content
+- Wikipedia, medical references, survival guides, Stack Overflow — all available as ZIM files
+- Tiered catalog (Essential/Standard/Comprehensive) lets users choose storage vs coverage tradeoff
+- S.I.N.A manages ZIM files via `kiwixManager.ts` and serves them via `kiwix-serve` when available
+- Content discovery and installation happens from the dashboard Library module
 
 ### Why Leaflet for maps?
 
@@ -100,8 +122,19 @@ Browser (localhost:3001)
 ### Why not Docker for everything?
 
 - The spec explicitly requires native install as the primary path
-- Docker is available as opt-in for supporting services
-- Native install is simpler, faster, and more portable to random x86 machines
+- Docker is available as opt-in for supporting services (tile server, ChromaDB)
+- Native install is simpler, faster, and more portable
+
+### Dashboard-first design philosophy
+
+After `bash scripts/bootstrap.sh && bash scripts/start.sh`, the terminal is done. The dashboard owns:
+
+- AI model installation (via Ollama adapter — no `ollama pull`)
+- Knowledge pack download and ZIM file registration
+- Map tile registration and tile server management
+- Module lifecycle (install → configure → running → degraded → repair)
+- Update detection and management
+- LAN exposure controls
 
 ---
 
@@ -194,6 +227,64 @@ startDownload()
   └─ DownloadJob.status = 'completed'
 ```
 
+### Kiwix / ZIM Library Flow
+
+```
+User selects knowledge pack in Library
+     │
+     ▼
+POST /api/downloads (catalog item type: kiwix-zim)
+     │
+     ▼
+DownloadJob → file saved to $SINA_DATA/kiwix/
+     │
+     ▼
+POST /api/kiwix/library/scan
+     │
+     ▼
+kiwixManager.registerZimFile()
+     │
+     ▼
+kiwix_items INSERT in SQLite
+     │
+     ▼
+POST /api/kiwix/serve/start (if kiwix-serve available)
+     │
+     ▼
+kiwix-serve process starts on :8888
+     │
+     ▼
+ZIM files served at http://127.0.0.1:8888
+```
+
+### Setup Wizard Flow
+
+```
+First visit to dashboard
+     │
+     ▼
+GET /api/setup/state → not completed
+     │
+     ▼
+Redirect to /setup
+     │
+     ▼
+GET /api/setup/probe → system state snapshot
+(RAM, Ollama status, installed models, ZIM count)
+     │
+     ▼
+Multi-step wizard:
+  storage → ai-runtime → ai-models →
+  knowledge-packs → maps → watched-folders →
+  network → complete
+     │
+     ▼
+Each step: PATCH /api/setup/state (step_id, status)
+     │
+     ▼
+complete: redirect to /
+```
+
 ---
 
 ## Module Boundaries
@@ -203,15 +294,18 @@ Each backend route file owns its own data access and is thin by design:
 | Route | Responsibility |
 |-------|----------------|
 | `/api/dashboard` | Aggregate health + stats for home page |
-| `/api/ai` | Ollama adapter, conversation CRUD, streaming chat |
+| `/api/ai` | Ollama adapter, conversation CRUD, streaming chat, model pull |
 | `/api/downloads` | Job queue, catalog, SSE progress feed |
 | `/api/library` | Content items, collections, upload, reindex trigger |
 | `/api/maps` | Regions, markers, GeoJSON import |
 | `/api/vault` | CRUD for personal vault items + FTS sync |
 | `/api/search` | Delegates to searchService (FTS + optional semantic) |
 | `/api/system` | Settings, status, import job log |
+| `/api/kiwix` | ZIM library CRUD, kiwix-serve lifecycle, tiered registry |
+| `/api/updates` | Multi-component update check (models, ZIMs, registries) |
+| `/api/setup` | Setup wizard state, system probe, step progression |
 
-Services (`src/services/`) handle the stateful, long-running, or complex logic:
+Services (`src/services/`) handle stateful, long-running, or complex logic:
 
 | Service | Role |
 |---------|------|
@@ -219,9 +313,11 @@ Services (`src/services/`) handle the stateful, long-running, or complex logic:
 | `fileWatcher` | chokidar watchers, auto-import detection |
 | `indexer` | Parse → chunk → FTS + embeddings pipeline |
 | `searchService` | FTS5 query + optional semantic similarity |
-| `ollamaAdapter` | All Ollama HTTP calls (chat, embed, models) |
+| `ollamaAdapter` | All Ollama HTTP calls (chat, embed, models, pull with SSE) |
 | `documentParser` | PDF/DOCX/HTML/MD/TXT/CSV parsing |
 | `storageMonitor` | Disk usage stats per data directory |
+| `kiwixManager` | ZIM file scan/register, kiwix-serve process lifecycle |
+| `updateManager` | Multi-component staleness and update detection |
 
 ---
 
@@ -231,10 +327,16 @@ Services (`src/services/`) handle the stateful, long-running, or complex logic:
 Add a case to `documentParser.ts` `parseDocument()` and update `isSupportedFileType()`.
 
 ### Adding a new AI runtime
-Implement the same interface as `ollamaAdapter.ts` (checkAvailable, listModels, chatStream, generateEmbedding) and swap it in via config or adapter factory.
+Implement the same interface as `ollamaAdapter.ts` (checkAvailable, listModels, chatStream, generateEmbedding, pullModel) and swap it in via config or adapter factory.
 
 ### Adding a new map format
 The `MapRegion` table has a `tile_format` field. Extend the Leaflet tile layer logic in `LeafletMap.tsx` to handle PMTiles or XYZ directories.
 
 ### Adding a new vault item type
 Add the type to the `VaultItemType` union in `shared/src/index.ts` and update the frontend type icons/handling.
+
+### Adding a new knowledge pack category
+Add an entry to `registry/kiwix-categories.json` with `id`, `name`, `description`, and `tiers` array. The Library module reads this registry to populate the content selection UI.
+
+### Adding a new setup wizard step
+Add a step to `DEFAULT_STEPS` in `routes/setup.ts` and add a corresponding `StepComponent` in `app/setup/page.tsx`.

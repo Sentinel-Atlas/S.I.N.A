@@ -340,6 +340,173 @@ export interface AppSettings {
   theme: 'dark';
 }
 
+// ─── Module Lifecycle ─────────────────────────────────────────────────────────
+
+export type ModuleLifecycleState =
+  | 'not_installed'
+  | 'installed'
+  | 'needs_config'
+  | 'running'
+  | 'degraded'
+  | 'updating'
+  | 'repairable';
+
+export interface ModuleInfo {
+  id: string;
+  name: string;
+  lifecycle_state: ModuleLifecycleState;
+  version?: string;
+  last_checked?: string;
+  error?: string;
+  actions: ModuleAction[];
+  readiness_score?: number; // 0–100
+  readiness_issues?: string[];
+}
+
+export type ModuleActionType =
+  | 'install'
+  | 'configure'
+  | 'start'
+  | 'stop'
+  | 'restart'
+  | 'repair'
+  | 'update'
+  | 'uninstall';
+
+export interface ModuleAction {
+  type: ModuleActionType;
+  label: string;
+  available: boolean;
+}
+
+// ─── Kiwix / ZIM ──────────────────────────────────────────────────────────────
+
+export type ContentTier = 'essential' | 'standard' | 'comprehensive';
+
+export interface ZimFile {
+  id: string;
+  name: string;
+  title: string;
+  description?: string;
+  language: string;
+  category: string;
+  size_bytes: number;
+  file_path: string;
+  installed: boolean;
+  installed_at?: string;
+  version?: string;
+  article_count?: number;
+  tags: string[];
+}
+
+export interface KiwixLibrary {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  icon?: string;
+  tiers: KiwixTier[];
+}
+
+export interface KiwixTier {
+  tier: ContentTier;
+  label: string;
+  description: string;
+  size_mb: number;
+  resources: KiwixResource[];
+}
+
+export interface KiwixResource {
+  id: string;
+  title: string;
+  description: string;
+  url: string;
+  size_mb: number;
+  version?: string;
+  checksum?: string;
+  checksum_algo?: string;
+  tags: string[];
+  installed?: boolean;
+}
+
+// ─── Update Manager ───────────────────────────────────────────────────────────
+
+export type UpdateComponentType =
+  | 'app'
+  | 'registry'
+  | 'ollama-model'
+  | 'map-region'
+  | 'kiwix-zim'
+  | 'content-pack';
+
+export interface UpdateAvailable {
+  id: string;
+  component_type: UpdateComponentType;
+  component_id: string;
+  name: string;
+  current_version?: string;
+  latest_version?: string;
+  size_bytes?: number;
+  changelog?: string;
+  critical: boolean;
+  checked_at: string;
+}
+
+export interface UpdateCheckResult {
+  checked_at: string;
+  updates_available: UpdateAvailable[];
+  up_to_date: string[];
+  errors: string[];
+}
+
+// ─── Setup Wizard ─────────────────────────────────────────────────────────────
+
+export type SetupStepId =
+  | 'storage'
+  | 'ai-runtime'
+  | 'ai-models'
+  | 'knowledge-packs'
+  | 'maps'
+  | 'watched-folders'
+  | 'network'
+  | 'complete';
+
+export type SetupStepStatus = 'pending' | 'in_progress' | 'complete' | 'skipped' | 'error';
+
+export interface SetupStep {
+  id: SetupStepId;
+  title: string;
+  description: string;
+  status: SetupStepStatus;
+  required: boolean;
+  error?: string;
+}
+
+export interface SetupState {
+  completed: boolean;
+  current_step: SetupStepId;
+  steps: SetupStep[];
+  started_at?: string;
+  completed_at?: string;
+}
+
+// ─── Emergency Packs ──────────────────────────────────────────────────────────
+
+export interface EmergencyPack {
+  id: string;
+  name: string;
+  icon: string;
+  description: string;
+  category: string;
+  readiness_score: number; // 0–100
+  item_count: number;
+  indexed_item_count: number;
+  pinned_items: string[];
+  tags: string[];
+  last_updated?: string;
+  missing_content?: string[];
+}
+
 // ─── API Responses ────────────────────────────────────────────────────────────
 
 export interface ApiResponse<T = unknown> {

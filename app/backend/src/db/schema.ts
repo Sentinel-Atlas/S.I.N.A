@@ -1,7 +1,7 @@
 // S.I.N.A SQLite Schema
 // All DDL is defined here and applied via db/index.ts on startup.
 
-export const SCHEMA_VERSION = 3;
+export const SCHEMA_VERSION = 4;
 
 export const CREATE_TABLES = `
 -- ─── Schema Version ──────────────────────────────────────────────────────────
@@ -191,5 +191,46 @@ CREATE VIRTUAL TABLE IF NOT EXISTS vault_fts USING fts5(
   title,
   content,
   tokenize = 'porter unicode61'
+);
+
+-- ─── Kiwix / ZIM Library ──────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS kiwix_items (
+  id           TEXT PRIMARY KEY,
+  name         TEXT NOT NULL,
+  title        TEXT NOT NULL,
+  description  TEXT,
+  language     TEXT NOT NULL DEFAULT 'en',
+  category     TEXT NOT NULL DEFAULT 'general',
+  size_bytes   INTEGER NOT NULL DEFAULT 0,
+  file_path    TEXT NOT NULL,
+  installed    INTEGER NOT NULL DEFAULT 0,
+  installed_at TEXT,
+  version      TEXT,
+  article_count INTEGER,
+  tags         TEXT NOT NULL DEFAULT '[]',  -- JSON array
+  metadata     TEXT   -- JSON blob
+);
+
+-- ─── Setup Wizard State ───────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS setup_state (
+  id           TEXT PRIMARY KEY DEFAULT 'singleton',
+  completed    INTEGER NOT NULL DEFAULT 0,
+  current_step TEXT NOT NULL DEFAULT 'storage',
+  steps        TEXT NOT NULL DEFAULT '[]',  -- JSON array of SetupStep
+  started_at   TEXT NOT NULL DEFAULT (datetime('now')),
+  completed_at TEXT
+);
+
+-- ─── Module Lifecycle ─────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS module_states (
+  id              TEXT PRIMARY KEY,
+  name            TEXT NOT NULL,
+  lifecycle_state TEXT NOT NULL DEFAULT 'not_installed',
+  version         TEXT,
+  last_checked    TEXT,
+  error           TEXT,
+  readiness_score INTEGER DEFAULT 0,
+  readiness_issues TEXT DEFAULT '[]',  -- JSON array
+  metadata        TEXT   -- JSON blob
 );
 `;

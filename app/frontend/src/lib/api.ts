@@ -105,6 +105,37 @@ export const api = {
       request<{ message: string }>('/system/settings', { method: 'PATCH', body: JSON.stringify(data) }),
     jobs: () => request<import('@sina/shared').ImportJob[]>('/system/jobs'),
   },
+
+  // ─── Setup Wizard ─────────────────────────────────────────────────────────
+  setup: {
+    state: () => request<import('@sina/shared').SetupState>('/setup/state'),
+    probe: () => request<Record<string, unknown>>('/setup/probe'),
+    updateState: (data: { step_id?: string; status?: string; current_step?: string }) =>
+      request<import('@sina/shared').SetupState>('/setup/state', { method: 'PATCH', body: JSON.stringify(data) }),
+    skip: () => request<import('@sina/shared').SetupState>('/setup/skip', { method: 'POST' }),
+    reset: () => request<{ message: string }>('/setup/reset', { method: 'POST' }),
+  },
+
+  // ─── Kiwix / ZIM Library ──────────────────────────────────────────────────
+  kiwix: {
+    status: () => request<Record<string, unknown>>('/kiwix/status'),
+    library: () => request<import('@sina/shared').ZimFile[]>('/kiwix/library'),
+    scan: () => request<{ added: number; removed: number }>('/kiwix/library/scan', { method: 'POST' }),
+    register: (data: { file_path: string; title?: string; description?: string; language?: string; category?: string; tags?: string[] }) =>
+      request<import('@sina/shared').ZimFile>('/kiwix/library/register', { method: 'POST', body: JSON.stringify(data) }),
+    remove: (id: string, deleteFile = false) =>
+      request<{ message: string }>(`/kiwix/library/${id}?delete_file=${deleteFile}`, { method: 'DELETE' }),
+    registryCategories: () => request<Record<string, unknown>>('/kiwix/registry/categories'),
+    registryWikipedia: () => request<Record<string, unknown>>('/kiwix/registry/wikipedia'),
+    startServe: () => request<{ message: string }>('/kiwix/serve/start', { method: 'POST' }),
+    stopServe: () => request<{ message: string }>('/kiwix/serve/stop', { method: 'POST' }),
+  },
+
+  // ─── Updates ──────────────────────────────────────────────────────────────
+  updates: {
+    status: () => request<{ checked_at: string | null; update_count: number | null }>('/updates/status'),
+    check: () => request<import('@sina/shared').UpdateCheckResult>('/updates/check', { method: 'POST' }),
+  },
 };
 
 // ─── Upload helper ───────────────────────────────────────────────────────────

@@ -1,0 +1,494 @@
+{
+  "spec_version": "1.0",
+  "description": "Tiered Kiwix/ZIM content packs for S.I.N.A offline library. Organized by category with Essential / Standard / Comprehensive tiers.",
+  "categories": [
+    {
+      "id": "medicine",
+      "name": "Medical Reference",
+      "description": "First aid, emergency medicine, clinical procedures, pharmacology",
+      "icon": "heart-pulse",
+      "tiers": [
+        {
+          "tier": "essential",
+          "label": "Essential",
+          "description": "First aid manual and emergency procedures — minimum viable medical reference",
+          "size_mb": 120,
+          "resources": [
+            {
+              "id": "wikimed-en",
+              "title": "WikiMed Medical Encyclopedia",
+              "description": "Medical encyclopedia based on Wikipedia. Diseases, symptoms, treatments, anatomy.",
+              "url": "https://download.kiwix.org/zim/wikipedia/wikipedia_en_medicine_maxi_2024-01.zim",
+              "size_mb": 115,
+              "tags": ["medicine", "encyclopedia", "offline"]
+            }
+          ]
+        },
+        {
+          "tier": "standard",
+          "label": "Standard",
+          "description": "WikiMed + WHO guidelines + first responder reference",
+          "size_mb": 480,
+          "resources": [
+            {
+              "id": "wikimed-en",
+              "title": "WikiMed Medical Encyclopedia",
+              "description": "Medical encyclopedia based on Wikipedia.",
+              "url": "https://download.kiwix.org/zim/wikipedia/wikipedia_en_medicine_maxi_2024-01.zim",
+              "size_mb": 115,
+              "tags": ["medicine", "encyclopedia"]
+            },
+            {
+              "id": "medlineplus-en",
+              "title": "MedlinePlus Health Information",
+              "description": "US National Library of Medicine consumer health information. Drug reference, symptom checker, health topics.",
+              "url": "https://download.kiwix.org/zim/other/medlineplus_en_2024-01.zim",
+              "size_mb": 340,
+              "tags": ["medicine", "drugs", "consumer-health"]
+            }
+          ]
+        },
+        {
+          "tier": "comprehensive",
+          "label": "Comprehensive",
+          "description": "Full clinical reference suite including emergency medicine and pharmacology",
+          "size_mb": 2100,
+          "resources": [
+            {
+              "id": "wikimed-en",
+              "title": "WikiMed Medical Encyclopedia",
+              "description": "Medical encyclopedia based on Wikipedia.",
+              "url": "https://download.kiwix.org/zim/wikipedia/wikipedia_en_medicine_maxi_2024-01.zim",
+              "size_mb": 115,
+              "tags": ["medicine", "encyclopedia"]
+            },
+            {
+              "id": "medlineplus-en",
+              "title": "MedlinePlus Health Information",
+              "description": "US National Library of Medicine consumer health information.",
+              "url": "https://download.kiwix.org/zim/other/medlineplus_en_2024-01.zim",
+              "size_mb": 340,
+              "tags": ["medicine", "drugs"]
+            },
+            {
+              "id": "wikipedia-en-medicine",
+              "title": "Wikipedia Medical Articles (Full English)",
+              "description": "All Wikipedia articles tagged under medicine, surgery, pharmacology, and clinical specialties.",
+              "url": "https://download.kiwix.org/zim/wikipedia/wikipedia_en_all_maxi_2024-01.zim",
+              "size_mb": 1600,
+              "tags": ["medicine", "wikipedia", "comprehensive"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "survival",
+      "name": "Survival & Preparedness",
+      "description": "Wilderness survival, emergency preparedness, bushcraft, SHTF references",
+      "icon": "tent",
+      "tiers": [
+        {
+          "tier": "essential",
+          "label": "Essential",
+          "description": "Core survival manual and emergency preparedness guide",
+          "size_mb": 45,
+          "resources": [
+            {
+              "id": "wikivoyage-en",
+              "title": "Wikivoyage — Offline Travel & Survival Guide",
+              "description": "Travel guides with safety, emergency contacts, and regional survival info.",
+              "url": "https://download.kiwix.org/zim/wikivoyage/wikivoyage_en_all_maxi_2024-01.zim",
+              "size_mb": 45,
+              "tags": ["survival", "travel", "regional"]
+            }
+          ]
+        },
+        {
+          "tier": "standard",
+          "label": "Standard",
+          "description": "Survival + emergency prep + wilderness skills reference",
+          "size_mb": 310,
+          "resources": [
+            {
+              "id": "wikivoyage-en",
+              "title": "Wikivoyage",
+              "description": "Travel guides with safety, emergency contacts, and regional survival info.",
+              "url": "https://download.kiwix.org/zim/wikivoyage/wikivoyage_en_all_maxi_2024-01.zim",
+              "size_mb": 45,
+              "tags": ["survival", "travel"]
+            },
+            {
+              "id": "wikibooks-survival",
+              "title": "Wikibooks — Survival & Wilderness",
+              "description": "Instructional books on wilderness survival, first aid, emergency prep, bushcraft.",
+              "url": "https://download.kiwix.org/zim/wikibooks/wikibooks_en_all_maxi_2024-01.zim",
+              "size_mb": 265,
+              "tags": ["survival", "howto", "wikibooks"]
+            }
+          ]
+        },
+        {
+          "tier": "comprehensive",
+          "label": "Comprehensive",
+          "description": "Full survival, preparedness, agriculture, and homesteading reference",
+          "size_mb": 820,
+          "resources": [
+            {
+              "id": "wikivoyage-en",
+              "title": "Wikivoyage",
+              "description": "Travel guides with safety and regional survival info.",
+              "url": "https://download.kiwix.org/zim/wikivoyage/wikivoyage_en_all_maxi_2024-01.zim",
+              "size_mb": 45,
+              "tags": ["survival", "travel"]
+            },
+            {
+              "id": "wikibooks-survival",
+              "title": "Wikibooks — Survival & Wilderness",
+              "description": "Instructional books on wilderness survival, first aid, emergency prep.",
+              "url": "https://download.kiwix.org/zim/wikibooks/wikibooks_en_all_maxi_2024-01.zim",
+              "size_mb": 265,
+              "tags": ["survival", "howto"]
+            },
+            {
+              "id": "wikipedia-en-survival",
+              "title": "Wikipedia — Emergency & Survival Articles",
+              "description": "Wikipedia articles covering emergency management, natural disasters, survival skills, preparedness.",
+              "url": "https://download.kiwix.org/zim/wikipedia/wikipedia_en_wp1_mini_2024-01.zim",
+              "size_mb": 510,
+              "tags": ["survival", "emergency", "wikipedia"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "diy-repair",
+      "name": "DIY, Repair & Maintenance",
+      "description": "Home repair, automotive, electronics, plumbing, mechanical skills",
+      "icon": "wrench",
+      "tiers": [
+        {
+          "tier": "essential",
+          "label": "Essential",
+          "description": "WikiHow core DIY and repair articles",
+          "size_mb": 220,
+          "resources": [
+            {
+              "id": "wikihow-en",
+              "title": "wikiHow — How-To Guides",
+              "description": "Step-by-step instructions for thousands of DIY tasks, repairs, and practical skills.",
+              "url": "https://download.kiwix.org/zim/wikihow/wikihow_en_maxi_2024-01.zim",
+              "size_mb": 220,
+              "tags": ["howto", "repair", "diy"]
+            }
+          ]
+        },
+        {
+          "tier": "standard",
+          "label": "Standard",
+          "description": "WikiHow + iFixit repair manuals",
+          "size_mb": 640,
+          "resources": [
+            {
+              "id": "wikihow-en",
+              "title": "wikiHow",
+              "description": "Step-by-step DIY guides.",
+              "url": "https://download.kiwix.org/zim/wikihow/wikihow_en_maxi_2024-01.zim",
+              "size_mb": 220,
+              "tags": ["howto", "diy"]
+            },
+            {
+              "id": "ifixit-en",
+              "title": "iFixit Repair Guides",
+              "description": "Device repair manuals for phones, laptops, appliances, and electronics. Step-by-step with photos.",
+              "url": "https://download.kiwix.org/zim/ifixit/ifixit_en_all_2024-01.zim",
+              "size_mb": 420,
+              "tags": ["repair", "electronics", "devices"]
+            }
+          ]
+        },
+        {
+          "tier": "comprehensive",
+          "label": "Comprehensive",
+          "description": "WikiHow + iFixit + Wikibooks technical + mechanical engineering references",
+          "size_mb": 905,
+          "resources": [
+            {
+              "id": "wikihow-en",
+              "title": "wikiHow",
+              "description": "Step-by-step DIY guides.",
+              "url": "https://download.kiwix.org/zim/wikihow/wikihow_en_maxi_2024-01.zim",
+              "size_mb": 220,
+              "tags": ["howto", "diy"]
+            },
+            {
+              "id": "ifixit-en",
+              "title": "iFixit Repair Guides",
+              "description": "Device repair manuals for phones, laptops, appliances.",
+              "url": "https://download.kiwix.org/zim/ifixit/ifixit_en_all_2024-01.zim",
+              "size_mb": 420,
+              "tags": ["repair", "electronics"]
+            },
+            {
+              "id": "wikibooks-engineering",
+              "title": "Wikibooks — Engineering & Technology",
+              "description": "Engineering, electronics, construction, and technical reference books.",
+              "url": "https://download.kiwix.org/zim/wikibooks/wikibooks_en_all_maxi_2024-01.zim",
+              "size_mb": 265,
+              "tags": ["engineering", "technical"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "agriculture",
+      "name": "Food, Water & Agriculture",
+      "description": "Food storage, water purification, gardening, farming, foraging",
+      "icon": "leaf",
+      "tiers": [
+        {
+          "tier": "essential",
+          "label": "Essential",
+          "description": "Wikibooks food and agriculture guides",
+          "size_mb": 265,
+          "resources": [
+            {
+              "id": "wikibooks-food",
+              "title": "Wikibooks — Food & Agriculture",
+              "description": "Cookbooks, food preservation, gardening guides, and agricultural practices.",
+              "url": "https://download.kiwix.org/zim/wikibooks/wikibooks_en_all_maxi_2024-01.zim",
+              "size_mb": 265,
+              "tags": ["food", "agriculture", "preservation"]
+            }
+          ]
+        },
+        {
+          "tier": "standard",
+          "label": "Standard",
+          "description": "Food + agriculture + foraging references",
+          "size_mb": 580,
+          "resources": [
+            {
+              "id": "wikibooks-food",
+              "title": "Wikibooks — Food & Agriculture",
+              "description": "Cookbooks, food preservation, gardening guides.",
+              "url": "https://download.kiwix.org/zim/wikibooks/wikibooks_en_all_maxi_2024-01.zim",
+              "size_mb": 265,
+              "tags": ["food", "agriculture"]
+            },
+            {
+              "id": "wikipedia-en-agriculture",
+              "title": "Wikipedia — Agriculture & Botany Articles",
+              "description": "Plant identification, agricultural practices, soil science, water management.",
+              "url": "https://download.kiwix.org/zim/wikipedia/wikipedia_en_wp1_mini_2024-01.zim",
+              "size_mb": 313,
+              "tags": ["agriculture", "botany", "wikipedia"]
+            }
+          ]
+        },
+        {
+          "tier": "comprehensive",
+          "label": "Comprehensive",
+          "description": "Comprehensive food, agriculture, and water systems reference",
+          "size_mb": 1100,
+          "resources": [
+            {
+              "id": "wikibooks-food",
+              "title": "Wikibooks — Food & Agriculture",
+              "description": "Cookbooks, food preservation, gardening guides.",
+              "url": "https://download.kiwix.org/zim/wikibooks/wikibooks_en_all_maxi_2024-01.zim",
+              "size_mb": 265,
+              "tags": ["food", "agriculture"]
+            },
+            {
+              "id": "wikihow-food",
+              "title": "wikiHow — Food & Home Skills",
+              "description": "How-to guides for cooking, preservation, gardening, and household tasks.",
+              "url": "https://download.kiwix.org/zim/wikihow/wikihow_en_maxi_2024-01.zim",
+              "size_mb": 220,
+              "tags": ["howto", "food"]
+            },
+            {
+              "id": "wikipedia-en-agriculture",
+              "title": "Wikipedia — Agriculture & Botany",
+              "description": "Plant identification, agricultural practices, soil science, water management.",
+              "url": "https://download.kiwix.org/zim/wikipedia/wikipedia_en_wp1_mini_2024-01.zim",
+              "size_mb": 313,
+              "tags": ["agriculture", "botany"]
+            },
+            {
+              "id": "wikipedia-en-chemistry",
+              "title": "Wikipedia — Chemistry & Water Treatment",
+              "description": "Water purification chemistry, sanitation, and environmental science.",
+              "url": "https://download.kiwix.org/zim/wikipedia/wikipedia_en_wp1_mini_2024-01.zim",
+              "size_mb": 313,
+              "tags": ["chemistry", "water", "sanitation"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "education",
+      "name": "Education & Reference",
+      "description": "General knowledge, science, history, mathematics, language arts",
+      "icon": "graduation-cap",
+      "tiers": [
+        {
+          "tier": "essential",
+          "label": "Essential",
+          "description": "Wikipedia mini — broad general reference in compact size",
+          "size_mb": 313,
+          "resources": [
+            {
+              "id": "wikipedia-en-mini",
+              "title": "Wikipedia Mini (English)",
+              "description": "The most important 10,000+ Wikipedia articles covering core knowledge across all subjects. 313 MB.",
+              "url": "https://download.kiwix.org/zim/wikipedia/wikipedia_en_wp1_mini_2024-01.zim",
+              "size_mb": 313,
+              "tags": ["wikipedia", "general", "reference"]
+            }
+          ]
+        },
+        {
+          "tier": "standard",
+          "label": "Standard",
+          "description": "Wikipedia mini + Wiktionary + Wikiquote",
+          "size_mb": 920,
+          "resources": [
+            {
+              "id": "wikipedia-en-mini",
+              "title": "Wikipedia Mini",
+              "description": "Core 10,000+ Wikipedia articles. 313 MB.",
+              "url": "https://download.kiwix.org/zim/wikipedia/wikipedia_en_wp1_mini_2024-01.zim",
+              "size_mb": 313,
+              "tags": ["wikipedia", "reference"]
+            },
+            {
+              "id": "wiktionary-en",
+              "title": "Wiktionary (English)",
+              "description": "Comprehensive dictionary and thesaurus with etymology, pronunciation, and definitions.",
+              "url": "https://download.kiwix.org/zim/wiktionary/wiktionary_en_all_maxi_2024-01.zim",
+              "size_mb": 610,
+              "tags": ["dictionary", "language", "reference"]
+            }
+          ]
+        },
+        {
+          "tier": "comprehensive",
+          "label": "Comprehensive",
+          "description": "Full Wikipedia English (all articles) — the complete offline knowledge base",
+          "size_mb": 22000,
+          "resources": [
+            {
+              "id": "wikipedia-en-all",
+              "title": "Wikipedia All Articles (English)",
+              "description": "The complete English Wikipedia. All 6+ million articles. Text only. 21.8 GB compressed.",
+              "url": "https://download.kiwix.org/zim/wikipedia/wikipedia_en_all_mini_2024-01.zim",
+              "size_mb": 21800,
+              "tags": ["wikipedia", "comprehensive", "all-articles"]
+            },
+            {
+              "id": "wiktionary-en",
+              "title": "Wiktionary (English)",
+              "description": "Comprehensive dictionary and thesaurus.",
+              "url": "https://download.kiwix.org/zim/wiktionary/wiktionary_en_all_maxi_2024-01.zim",
+              "size_mb": 610,
+              "tags": ["dictionary", "language"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "technical",
+      "name": "Technical & Engineering",
+      "description": "Electronics, computing, networking, engineering references",
+      "icon": "cpu",
+      "tiers": [
+        {
+          "tier": "essential",
+          "label": "Essential",
+          "description": "Stack Overflow — programming and technical Q&A",
+          "size_mb": 35000,
+          "resources": [
+            {
+              "id": "stackoverflow-en",
+              "title": "Stack Overflow (Top Questions)",
+              "description": "The most-voted Stack Overflow programming Q&A. Covers all major languages and frameworks.",
+              "url": "https://download.kiwix.org/zim/stack_exchange/stackoverflow.com_en_2024-01.zim",
+              "size_mb": 35000,
+              "tags": ["programming", "computing", "stackoverflow"]
+            }
+          ]
+        },
+        {
+          "tier": "standard",
+          "label": "Standard",
+          "description": "Stack Overflow + DevDocs + Wikibooks technical reference",
+          "size_mb": 35265,
+          "resources": [
+            {
+              "id": "stackoverflow-en",
+              "title": "Stack Overflow",
+              "description": "The most-voted Stack Overflow programming Q&A.",
+              "url": "https://download.kiwix.org/zim/stack_exchange/stackoverflow.com_en_2024-01.zim",
+              "size_mb": 35000,
+              "tags": ["programming", "computing"]
+            },
+            {
+              "id": "wikibooks-tech",
+              "title": "Wikibooks — Computing & Electronics",
+              "description": "Technical textbooks on computing, electronics, networking, and engineering.",
+              "url": "https://download.kiwix.org/zim/wikibooks/wikibooks_en_all_maxi_2024-01.zim",
+              "size_mb": 265,
+              "tags": ["technical", "computing", "electronics"]
+            }
+          ]
+        },
+        {
+          "tier": "comprehensive",
+          "label": "Comprehensive",
+          "description": "Full technical reference: Stack Overflow + all Stack Exchange communities + Wikibooks",
+          "size_mb": 60000,
+          "resources": [
+            {
+              "id": "stackoverflow-en",
+              "title": "Stack Overflow",
+              "description": "Top-voted programming Q&A.",
+              "url": "https://download.kiwix.org/zim/stack_exchange/stackoverflow.com_en_2024-01.zim",
+              "size_mb": 35000,
+              "tags": ["programming"]
+            },
+            {
+              "id": "stackexchange-electronics",
+              "title": "Electronics Stack Exchange",
+              "description": "Q&A for electronics and electrical engineering.",
+              "url": "https://download.kiwix.org/zim/stack_exchange/electronics.stackexchange.com_en_2024-01.zim",
+              "size_mb": 3500,
+              "tags": ["electronics", "hardware"]
+            },
+            {
+              "id": "stackexchange-unix",
+              "title": "Unix & Linux Stack Exchange",
+              "description": "Q&A for Linux and Unix systems administration.",
+              "url": "https://download.kiwix.org/zim/stack_exchange/unix.stackexchange.com_en_2024-01.zim",
+              "size_mb": 4200,
+              "tags": ["linux", "unix", "sysadmin"]
+            },
+            {
+              "id": "wikibooks-tech",
+              "title": "Wikibooks — Computing & Electronics",
+              "description": "Technical textbooks on computing, electronics, networking.",
+              "url": "https://download.kiwix.org/zim/wikibooks/wikibooks_en_all_maxi_2024-01.zim",
+              "size_mb": 265,
+              "tags": ["technical", "computing"]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

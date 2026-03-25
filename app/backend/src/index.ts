@@ -18,6 +18,9 @@ import mapsRoutes from './routes/maps';
 import vaultRoutes from './routes/vault';
 import searchRoutes from './routes/search';
 import systemRoutes from './routes/system';
+import kiwixRoutes from './routes/kiwix';
+import updatesRoutes from './routes/updates';
+import setupRoutes from './routes/setup';
 
 async function main() {
   // ── Bootstrap ───────────────────────────────────────────────────────────────
@@ -59,6 +62,9 @@ async function main() {
   app.use('/api/vault', vaultRoutes);
   app.use('/api/search', searchRoutes);
   app.use('/api/system', systemRoutes);
+  app.use('/api/kiwix', kiwixRoutes);
+  app.use('/api/updates', updatesRoutes);
+  app.use('/api/setup', setupRoutes);
 
   // ── Serve frontend static files (production) ────────────────────────────────
   const frontendDist = path.resolve(__dirname, '../../frontend/.next');

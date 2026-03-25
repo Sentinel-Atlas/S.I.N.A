@@ -1,7 +1,14 @@
 #!/usr/bin/env bash
-# S.I.N.A Bootstrap Script
-# Installs system dependencies and sets up the project on Ubuntu/Debian Linux
-# Usage: bash scripts/bootstrap.sh [--data-dir /path/to/data]
+# S.I.N.A Platform Initialization Script
+# ─────────────────────────────────────────────────────────────────────────────
+# This script initializes the platform. It does exactly one thing:
+# get S.I.N.A running so the dashboard can do the rest.
+#
+# Usage: bash scripts/bootstrap.sh [--data-dir /path/to/data] [--with-ollama] [--with-docker]
+#
+# After this completes, open http://127.0.0.1:3001
+# The Setup Wizard will guide you through AI, content, and map configuration.
+# ─────────────────────────────────────────────────────────────────────────────
 set -euo pipefail
 
 BLUE='\033[0;34m'
@@ -27,8 +34,8 @@ echo "  ╚════██║██║██║╚██╗██║██╔
 echo "  ███████║██║██║ ╚████║██║  ██║"
 echo "  ╚══════╝╚═╝╚═╝  ╚═══╝╚═╝  ╚═╝"
 echo ""
-echo -e "  Personal Offline Command Center${RESET}"
-echo -e "  ${BLUE}Bootstrap v0.1.0${RESET}"
+echo -e "  Survival Intelligence & Navigation Assistant${RESET}"
+echo -e "  ${BLUE}Platform Initialization${RESET}"
 echo ""
 
 # ─── Parse args ───────────────────────────────────────────────────────────────
@@ -119,9 +126,9 @@ elif [[ "$INSTALL_OLLAMA" == "true" ]]; then
   curl -fsSL https://ollama.ai/install.sh | sh
   success "Ollama installed"
 else
-  warn "Ollama not found. AI features will be unavailable until installed."
-  warn "Install manually: curl -fsSL https://ollama.ai/install.sh | sh"
-  warn "Or re-run: bash scripts/bootstrap.sh --with-ollama"
+  warn "Ollama not found — AI features require it."
+  warn "You can install and configure Ollama from the S.I.N.A dashboard after first launch."
+  warn "Or install now: bash scripts/bootstrap.sh --with-ollama"
 fi
 
 # ─── Docker (optional) ───────────────────────────────────────────────────────
@@ -135,8 +142,9 @@ elif [[ "$INSTALL_DOCKER" == "true" ]]; then
   sudo usermod -aG docker "$USER"
   success "Docker installed. Log out and back in to use without sudo."
 else
-  warn "Docker not found. Optional supporting services (tile server, ChromaDB) will not be available."
-  warn "Install manually: curl -fsSL https://get.docker.com | sh"
+  warn "Docker not found — required for the offline map tile server."
+  warn "You can install Docker from the Tools module inside the dashboard."
+  warn "Or install now: bash scripts/bootstrap.sh --with-docker"
 fi
 
 # ─── Project Dependencies ─────────────────────────────────────────────────────
@@ -171,7 +179,7 @@ success "Backend built"
 header "Data Directories"
 
 log "Creating data directories at: $DATA_DIR"
-mkdir -p "$DATA_DIR"/{config,db,logs,cache,downloads,imports,processed,indexes,models,maps}
+mkdir -p "$DATA_DIR"/{config,db,logs,cache,downloads,imports,processed,indexes,models,maps,kiwix}
 mkdir -p "$DATA_DIR"/knowledge/{medical,survival,repair,wikipedia,technical,web-archives,personal}
 mkdir -p "$DATA_DIR"/{vault,tools,backups}
 success "Data directories created at $DATA_DIR"
@@ -179,17 +187,23 @@ success "Data directories created at $DATA_DIR"
 # ─── Done ─────────────────────────────────────────────────────────────────────
 echo ""
 echo -e "${GREEN}${BOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}"
-echo -e "${GREEN}${BOLD}  S.I.N.A installed successfully!${RESET}"
+echo -e "${GREEN}${BOLD}  S.I.N.A platform initialized.${RESET}"
 echo -e "${GREEN}${BOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}"
 echo ""
 echo -e "  Data directory:  ${BLUE}$DATA_DIR${RESET}"
-echo -e "  Start server:    ${BLUE}bash scripts/start.sh${RESET}"
-echo -e "  Dashboard:       ${BLUE}http://127.0.0.1:3001${RESET}"
 echo ""
-echo -e "  Next steps:"
-echo -e "    1. Start S.I.N.A:        ${YELLOW}bash scripts/start.sh${RESET}"
-echo -e "    2. Install AI model:      ${YELLOW}ollama pull llama3.2${RESET}"
-echo -e "    3. Pull embedding model:  ${YELLOW}ollama pull nomic-embed-text${RESET}"
-echo -e "    4. Import documents via the Library or Import modules"
-echo -e "    5. See docs/INSTALL.md for full guide"
+echo -e "${BOLD}  Terminal work is done. Start the server and open the dashboard:${RESET}"
+echo ""
+echo -e "    ${YELLOW}bash scripts/start.sh${RESET}"
+echo ""
+echo -e "  Then open: ${BLUE}http://127.0.0.1:3001${RESET}"
+echo ""
+echo -e "  The ${BOLD}Setup Wizard${RESET} will launch on first visit and guide you through:"
+echo -e "    • Installing AI models (no terminal required)"
+echo -e "    • Downloading knowledge packs (Wikipedia, medical, survival)"
+echo -e "    • Configuring offline maps"
+echo -e "    • Setting up watched import folders"
+echo -e "    • Configuring network exposure"
+echo ""
+echo -e "  ${BLUE}Everything else is managed from inside the dashboard.${RESET}"
 echo ""

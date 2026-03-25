@@ -32,6 +32,7 @@ export const config = {
     get vault()     { return path.join(config.paths.dataDir, 'vault'); },
     get tools()     { return path.join(config.paths.dataDir, 'tools'); },
     get backups()   { return path.join(config.paths.dataDir, 'backups'); },
+    get kiwix()     { return path.join(config.paths.dataDir, 'kiwix'); },
     get dbFile()    { return path.join(config.paths.dataDir, 'db', 'sina.db'); },
   },
 
@@ -55,10 +56,12 @@ export const config = {
   },
 
   registry: {
-    catalogPath: path.resolve(process.cwd(), '../../registry/catalog.json'),
-    modelsPath: path.resolve(process.cwd(), '../../registry/models.json'),
-    mapsPath: path.resolve(process.cwd(), '../../registry/maps.json'),
-    toolsPath: path.resolve(process.cwd(), '../../registry/tools.json'),
+    catalogPath:         path.resolve(process.cwd(), '../../registry/catalog.json'),
+    modelsPath:          path.resolve(process.cwd(), '../../registry/models.json'),
+    mapsPath:            path.resolve(process.cwd(), '../../registry/maps.json'),
+    toolsPath:           path.resolve(process.cwd(), '../../registry/tools.json'),
+    kiwixCategoriesPath: path.resolve(process.cwd(), '../../registry/kiwix-categories.json'),
+    wikipediaPath:       path.resolve(process.cwd(), '../../registry/wikipedia.json'),
   },
 } as const;
 
@@ -86,6 +89,7 @@ export function ensureDataDirs(): void {
     config.paths.vault,
     config.paths.tools,
     config.paths.backups,
+    config.paths.kiwix,
   ];
   for (const dir of dirs) {
     fs.mkdirSync(dir, { recursive: true });

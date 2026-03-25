@@ -1,0 +1,101 @@
+{
+  "spec_version": "1.0",
+  "description": "Wikipedia offline packs for S.I.N.A. Available in multiple size tiers. All use the Kiwix ZIM format.",
+  "base_url": "https://download.kiwix.org/zim/wikipedia/",
+  "note": "URLs must be confirmed against current Kiwix library. Versions change monthly. S.I.N.A fetches the current library index to resolve actual download links.",
+  "tiers": [
+    {
+      "id": "wikipedia-en-mini",
+      "label": "Wikipedia Mini",
+      "description": "The 10,000 most important articles from English Wikipedia. Covers core science, history, geography, medicine, and technology topics. Recommended starting point.",
+      "size_mb": 313,
+      "size_display": "313 MB",
+      "article_count": "~10,000",
+      "language": "en",
+      "recommended_for": ["essential", "standard"],
+      "url_pattern": "wikipedia_en_wp1_mini_{YYYY-MM}.zim",
+      "tags": ["wikipedia", "essential", "mini", "general"]
+    },
+    {
+      "id": "wikipedia-en-top",
+      "label": "Wikipedia Top 100k",
+      "description": "The 100,000 most-visited Wikipedia articles. Significantly broader coverage while staying manageable in size.",
+      "size_mb": 3500,
+      "size_display": "3.5 GB",
+      "article_count": "~100,000",
+      "language": "en",
+      "recommended_for": ["standard"],
+      "url_pattern": "wikipedia_en_top_maxi_{YYYY-MM}.zim",
+      "tags": ["wikipedia", "standard", "broad"]
+    },
+    {
+      "id": "wikipedia-en-medicine",
+      "label": "Wikipedia Medical",
+      "description": "All Wikipedia articles tagged under medicine, surgery, clinical specialties, pharmacology, and anatomy.",
+      "size_mb": 2100,
+      "size_display": "2.1 GB",
+      "article_count": "~30,000",
+      "language": "en",
+      "recommended_for": ["standard", "comprehensive"],
+      "url_pattern": "wikipedia_en_medicine_maxi_{YYYY-MM}.zim",
+      "tags": ["wikipedia", "medicine", "clinical", "pharmacology"]
+    },
+    {
+      "id": "wikipedia-en-novid",
+      "label": "Wikipedia All Articles (No Video)",
+      "description": "All 6+ million English Wikipedia articles, text and images, without embedded video. A comprehensive offline knowledge base.",
+      "size_mb": 87000,
+      "size_display": "87 GB",
+      "article_count": "6,700,000+",
+      "language": "en",
+      "recommended_for": ["comprehensive"],
+      "url_pattern": "wikipedia_en_all_novid_{YYYY-MM}.zim",
+      "tags": ["wikipedia", "comprehensive", "all-articles"]
+    },
+    {
+      "id": "wikipedia-en-maxi",
+      "label": "Wikipedia All Articles (With Images)",
+      "description": "Complete English Wikipedia with full images. The largest and most complete offline Wikipedia available.",
+      "size_mb": 115000,
+      "size_display": "115 GB",
+      "article_count": "6,700,000+",
+      "language": "en",
+      "recommended_for": ["comprehensive"],
+      "url_pattern": "wikipedia_en_all_maxi_{YYYY-MM}.zim",
+      "tags": ["wikipedia", "comprehensive", "all-articles", "images"]
+    }
+  ],
+  "specialized": [
+    {
+      "id": "wikimed-en",
+      "label": "WikiMed Medical Encyclopedia",
+      "description": "Standalone medical encyclopedia. Diseases, symptoms, treatments, procedures. Based on Wikipedia medical content but curated and structured for clinical use.",
+      "size_mb": 115,
+      "size_display": "115 MB",
+      "language": "en",
+      "url_pattern": "wikipedia_en_medicine_maxi_{YYYY-MM}.zim",
+      "tags": ["medicine", "clinical", "emergency"]
+    },
+    {
+      "id": "wikipedia-fr-mini",
+      "label": "Wikipedia Mini (French)",
+      "description": "Les 10 000 articles les plus importants de Wikipédia en français.",
+      "size_mb": 280,
+      "size_display": "280 MB",
+      "language": "fr",
+      "url_pattern": "wikipedia_fr_wp1_mini_{YYYY-MM}.zim",
+      "tags": ["wikipedia", "french", "mini"]
+    },
+    {
+      "id": "wikipedia-es-mini",
+      "label": "Wikipedia Mini (Spanish)",
+      "description": "Los 10.000 artículos más importantes de Wikipedia en español.",
+      "size_mb": 295,
+      "size_display": "295 MB",
+      "language": "es",
+      "url_pattern": "wikipedia_es_wp1_mini_{YYYY-MM}.zim",
+      "tags": ["wikipedia", "spanish", "mini"]
+    }
+  ],
+  "installation_note": "ZIM files require ~1.5x their compressed size in free disk space during extraction. The tile server profile must be running to serve Kiwix content through the S.I.N.A dashboard. Use Downloads → Install to manage these files."
+}

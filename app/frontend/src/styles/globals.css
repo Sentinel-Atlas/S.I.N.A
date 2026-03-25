@@ -1,0 +1,179 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --sidebar-width: 15rem;
+    --header-height: 3.5rem;
+    --statusbar-height: 1.75rem;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-bg-base text-text-primary font-sans;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #070B12;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-border-bright rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-accent-dim;
+  }
+
+  /* Selection */
+  ::selection {
+    @apply bg-accent-dim text-accent-glow;
+  }
+
+  /* Focus rings */
+  :focus-visible {
+    @apply outline-none ring-2 ring-accent/50 ring-offset-1 ring-offset-bg-base;
+  }
+
+  /* Links */
+  a {
+    @apply text-accent hover:text-accent-glow transition-colors;
+  }
+
+  /* Headings */
+  h1, h2, h3, h4 {
+    @apply font-semibold text-text-primary;
+  }
+
+  /* Code */
+  code {
+    @apply font-mono text-accent bg-bg-overlay px-1 py-0.5 rounded text-xs;
+  }
+}
+
+@layer components {
+  /* Card base */
+  .card {
+    @apply bg-bg-surface border border-border rounded-lg shadow-card;
+  }
+
+  .card-raised {
+    @apply bg-bg-raised border border-border rounded-lg shadow-card;
+  }
+
+  /* Status indicators */
+  .status-dot {
+    @apply inline-block w-2 h-2 rounded-full;
+  }
+  .status-dot.online  { @apply bg-status-online; box-shadow: 0 0 6px theme('colors.status.online'); }
+  .status-dot.warning { @apply bg-status-warning; }
+  .status-dot.error   { @apply bg-status-error; }
+  .status-dot.offline { @apply bg-status-offline; }
+
+  /* Module header */
+  .module-header {
+    @apply flex items-center gap-3 mb-6;
+  }
+  .module-header h1 {
+    @apply text-lg font-semibold text-text-primary;
+  }
+
+  /* Input base */
+  .input-base {
+    @apply bg-bg-overlay border border-border rounded-md px-3 py-2
+           text-text-primary placeholder:text-text-muted
+           focus:outline-none focus:border-accent/50 focus:ring-1 focus:ring-accent/25
+           transition-colors text-sm w-full;
+  }
+
+  /* Badge */
+  .badge {
+    @apply inline-flex items-center px-2 py-0.5 rounded text-2xs font-medium uppercase tracking-wide;
+  }
+
+  /* Progress bar */
+  .progress-track {
+    @apply h-1 bg-bg-overlay rounded-full overflow-hidden;
+  }
+  .progress-fill {
+    @apply h-full rounded-full transition-all duration-300;
+  }
+
+  /* Sidebar nav item */
+  .nav-item {
+    @apply flex items-center gap-3 px-3 py-2.5 rounded-md
+           text-text-secondary text-sm font-medium
+           hover:bg-bg-overlay hover:text-text-primary
+           transition-colors cursor-pointer;
+  }
+  .nav-item.active {
+    @apply bg-accent/10 text-accent border-l-2 border-accent;
+  }
+
+  /* Table */
+  .data-table {
+    @apply w-full text-sm;
+  }
+  .data-table th {
+    @apply text-left text-text-muted text-2xs uppercase tracking-widest font-medium
+           py-2 px-3 border-b border-border;
+  }
+  .data-table td {
+    @apply py-2.5 px-3 border-b border-border/50 text-text-secondary;
+  }
+  .data-table tr:hover td {
+    @apply bg-bg-overlay/50 text-text-primary;
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    @apply bg-gradient-to-r from-accent to-accent-glow bg-clip-text text-transparent;
+  }
+
+  .glow-amber {
+    box-shadow: 0 0 20px rgba(245, 158, 11, 0.2);
+  }
+
+  .truncate-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
+
+/* Leaflet map overrides */
+.leaflet-container {
+  @apply bg-bg-surface;
+  font-family: theme('fontFamily.sans');
+}
+.leaflet-popup-content-wrapper {
+  @apply bg-bg-raised border border-border text-text-primary rounded-lg shadow-card;
+}
+.leaflet-popup-tip {
+  @apply bg-bg-raised;
+}
+
+/* SSE / stream typing cursor */
+.streaming-cursor::after {
+  content: '▋';
+  @apply animate-pulse text-accent ml-0.5;
+}

@@ -1,0 +1,32 @@
+{
+  "_comment": "S.I.N.A Tools Registry — external utility tool definitions",
+  "_version": "1",
+  "tools": [
+    {
+      "id": "ollama",
+      "name": "Ollama",
+      "description": "Local LLM runtime. Required for AI features.",
+      "category": "ai",
+      "install_command": "curl -fsSL https://ollama.ai/install.sh | sh",
+      "check_command": "ollama --version",
+      "service_name": "ollama"
+    },
+    {
+      "id": "docker",
+      "name": "Docker",
+      "description": "Container runtime for supporting services (tile server, ChromaDB).",
+      "category": "system",
+      "install_command": "curl -fsSL https://get.docker.com | sh",
+      "check_command": "docker --version"
+    },
+    {
+      "id": "node",
+      "name": "Node.js 20+",
+      "description": "JavaScript runtime required for S.I.N.A backend and frontend.",
+      "category": "system",
+      "install_command": "curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash - && sudo apt-get install -y nodejs",
+      "check_command": "node --version",
+      "min_version": "20.0.0"
+    }
+  ]
+}

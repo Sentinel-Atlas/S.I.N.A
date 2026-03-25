@@ -55,11 +55,24 @@ done
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 
+is_wsl() {
+  [[ -n "${WSL_DISTRO_NAME:-}" || -n "${WSL_INTEROP:-}" ]] && return 0
+  grep -qi microsoft /proc/version 2>/dev/null
+}
+
 # ─── OS Check ────────────────────────────────────────────────────────────────
 header "System Check"
 
 if [[ "$(uname -s)" != "Linux" ]]; then
-  error "S.I.N.A requires Linux (Ubuntu 22.04+ or Debian 12+)"
+  error "S.I.N.A bootstrap is supported on Ubuntu/Debian Linux, or Windows via WSL2 Ubuntu."
+fi
+
+PLATFORM_MODE="linux"
+if is_wsl; then
+  PLATFORM_MODE="wsl2"
+  log "Detected environment: Windows via WSL2"
+else
+  log "Detected environment: Linux native"
 fi
 
 if [[ "$(uname -m)" != "x86_64" ]]; then
@@ -69,11 +82,20 @@ fi
 if command -v lsb_release &>/dev/null; then
   DISTRO=$(lsb_release -is)
   VERSION=$(lsb_release -rs)
-  log "Detected: $DISTRO $VERSION"
+  log "Detected distro: $DISTRO $VERSION"
   if [[ "$DISTRO" != "Ubuntu" && "$DISTRO" != "Debian" ]]; then
-    warn "Unsupported distro: $DISTRO. Proceeding anyway."
+    warn "Official support targets Ubuntu/Debian. Proceeding anyway."
   fi
 fi
+
+if [[ "$PLATFORM_MODE" == "wsl2" ]]; then
+  if [[ "$(pwd)" == /mnt/* ]]; then
+    warn "Repo is on a Windows-mounted path ($(pwd))."
+    warn "For better performance, keep the repo and SINA_DATA_DIR inside the WSL Linux filesystem (e.g. ~/s.i.n.a)."
+  fi
+  warn "WSL2 note: Docker Desktop integration and Ollama-on-WSL may require extra setup."
+fi
+
 success "OS check passed"
 
 # ─── Node.js ─────────────────────────────────────────────────────────────────
@@ -196,7 +218,11 @@ echo -e "${BOLD}  Terminal work is done. Start the server and open the dashboard
 echo ""
 echo -e "    ${YELLOW}bash scripts/start.sh${RESET}"
 echo ""
-echo -e "  Then open: ${BLUE}http://127.0.0.1:3001${RESET}"
+if [[ "$PLATFORM_MODE" == "wsl2" ]]; then
+  echo -e "  Then open from Windows or WSL browser: ${BLUE}http://127.0.0.1:3001${RESET}"
+else
+  echo -e "  Then open: ${BLUE}http://127.0.0.1:3001${RESET}"
+fi
 echo ""
 echo -e "  The ${BOLD}Setup Wizard${RESET} will launch on first visit and guide you through:"
 echo -e "    • Installing AI models (no terminal required)"

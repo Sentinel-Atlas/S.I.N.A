@@ -8,6 +8,7 @@ import { getDb } from '../db';
 import { config } from '../config';
 import { checkOllamaAvailable, listModels } from '../services/ollamaAdapter';
 import { getKiwixStatus } from '../services/kiwixManager';
+import { detectRuntimePlatform } from '../services/platform';
 
 const router = Router();
 
@@ -219,6 +220,8 @@ router.get('/probe', async (_req: Request, res: Response) => {
     const freeMem = os.freemem();
     const cpuCount = os.cpus().length;
 
+    const runtimePlatform = detectRuntimePlatform();
+
     // Check AI runtime
     const ollamaAvailable = await checkOllamaAvailable();
     const installedModels = ollamaAvailable ? await listModels() : [];
@@ -246,6 +249,7 @@ router.get('/probe', async (_req: Request, res: Response) => {
           total_ram_gb: ramGb,
           cpu_count: cpuCount,
           platform: process.platform,
+          runtime_platform: runtimePlatform,
         },
         storage: {
           data_dir: dataDir,

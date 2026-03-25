@@ -5,6 +5,7 @@ import { getStorageState } from '../services/storageMonitor';
 import { checkOllamaAvailable, listModels } from '../services/ollamaAdapter';
 import { startWatchers, stopWatchers, getWatchedDirs } from '../services/fileWatcher';
 import { config } from '../config';
+import { detectRuntimePlatform } from '../services/platform';
 import type { AppSettings } from '@sina/shared';
 
 const router = Router();
@@ -15,6 +16,7 @@ router.get('/status', async (_req, res) => {
   const settings = getAllSettings();
   const storage = getStorageState();
   const ollamaUp = await checkOllamaAvailable().catch(() => false);
+  const runtimePlatform = detectRuntimePlatform();
 
   res.json({
     success: true,
@@ -23,6 +25,7 @@ router.get('/status', async (_req, res) => {
       uptime: process.uptime(),
       node_version: process.version,
       platform: os.platform(),
+      runtime_platform: runtimePlatform,
       arch: os.arch(),
       hostname: os.hostname(),
       cpu_count: os.cpus().length,

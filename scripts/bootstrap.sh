@@ -58,7 +58,9 @@ PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 # ─── WSL2 detection ──────────────────────────────────────────────────────────
 header "Environment Check"
 
+PLATFORM_MODE=linux
 if grep -qi microsoft /proc/version 2>/dev/null; then
+  PLATFORM_MODE=wsl2
   warn "WSL2 environment detected."
   # Check for Windows path (a common gotcha that causes permission and CRLF issues)
   if [[ "$PROJECT_DIR" == /mnt/* ]]; then

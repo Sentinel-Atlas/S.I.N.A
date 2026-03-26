@@ -70,6 +70,22 @@ export default function LeafletMap({ markers, tileServerUrl, center = DEFAULT_CE
       }).addTo(map);
 
       mapRef.current = map;
+
+      // Render initial markers (the marker-update effect fires before async init
+      // completes, so we must seed markers here on first load)
+      for (const marker of markers) {
+        const color = MARKER_COLORS[marker.category] || '#94A3B8';
+        const icon = L.divIcon({
+          className: '',
+          html: `<div style="width:12px;height:12px;border-radius:50%;background:${color};border:2px solid white;box-shadow:0 1px 4px rgba(0,0,0,0.5);"></div>`,
+          iconSize: [12, 12],
+          iconAnchor: [6, 6],
+        });
+        const m = L.marker([marker.lat, marker.lng], { icon })
+          .bindPopup(`<strong>${marker.name}</strong>${marker.description ? `<br/><small>${marker.description}</small>` : ''}`)
+          .addTo(map);
+        markersRef.current.push(m);
+      }
     })();
 
     return () => {

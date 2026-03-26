@@ -1,6 +1,5 @@
-import type { NextConfig } from 'next';
-
-const nextConfig: NextConfig = {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   async rewrites() {
     return [
       {
@@ -10,7 +9,7 @@ const nextConfig: NextConfig = {
     ];
   },
   webpack(config) {
-    // Leaflet SSR fix
+    // Leaflet SSR fix — fs is not available in the browser bundle
     config.resolve.fallback = { ...config.resolve.fallback, fs: false };
     return config;
   },

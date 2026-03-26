@@ -71,7 +71,7 @@ router.post('/:id/cancel', (req, res) => {
   res.json({ success: true, data: getDownloadJob(req.params.id) });
 });
 
-router.delete('/:id', (req, res) => {
+router.delete('/:id', async (req, res) => {
   const job = getDownloadJob(req.params.id);
   if (!job) return res.status(404).json({ success: false, error: 'Not found' });
   cancelDownload(req.params.id);

@@ -37,7 +37,13 @@ export default function LeafletMap({ markers, tileServerUrl, center = DEFAULT_CE
 
     (async () => {
       const L = await import('leaflet');
-      await import('leaflet/dist/leaflet.css');
+      // Load Leaflet CSS by injecting a <link> tag (dynamic CSS import is not type-safe)
+      if (!document.querySelector('link[href*="leaflet"]')) {
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+        document.head.appendChild(link);
+      }
 
       const map = L.map(containerRef.current!, {
         center,

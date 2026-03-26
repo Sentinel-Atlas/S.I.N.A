@@ -49,7 +49,7 @@ export const api = {
     collections: () => request<import('@sina/shared').Collection[]>('/library/collections'),
     createCollection: (data: { name: string; description?: string; category?: string }) =>
       request<import('@sina/shared').Collection>('/library/collections', { method: 'POST', body: JSON.stringify(data) }),
-    items: (params?: { category?: string; status?: string; collection_id?: string; page?: number }) => {
+    items: (params?: { category?: string; status?: string; collection_id?: string; page?: number; per_page?: number }) => {
       const q = new URLSearchParams(Object.entries(params || {}).filter(([, v]) => v != null).map(([k, v]) => [k, String(v)]));
       return request<import('@sina/shared').PaginatedResponse<import('@sina/shared').ContentItem>>(`/library/items?${q}`);
     },

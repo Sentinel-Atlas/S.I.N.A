@@ -464,7 +464,7 @@ function NetworkStep({ onComplete, onSkip }: StepProps) {
   );
 }
 
-function CompleteStep() {
+function CompleteStep(_props: StepProps) {
   const router = useRouter();
 
   return (

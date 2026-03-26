@@ -164,7 +164,7 @@ async function _executeDownload(job: DownloadJob, signal: AbortSignal): Promise<
     }
   } finally {
     writer.end();
-    await new Promise(r => writer.once('finish', r));
+    await new Promise<void>(r => writer.once('finish', () => r()));
   }
 
   // Verify checksum

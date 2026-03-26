@@ -39,8 +39,13 @@ export default function VaultPage() {
   const [saving, setSaving] = useState(false);
 
   const load = async () => {
-    const res = await api.vault.list({ type: typeFilter || undefined });
-    setItems(res.items);
+    try {
+      const res = await api.vault.list({ type: typeFilter || undefined });
+      setItems(res?.items ?? []);
+    } catch (err) {
+      console.error('[Vault] load failed:', err);
+      setItems([]);
+    }
   };
 
   useEffect(() => { load(); }, [typeFilter]);

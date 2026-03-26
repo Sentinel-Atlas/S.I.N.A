@@ -33,10 +33,14 @@ export default function LeafletMap({ markers, tileServerUrl, center = DEFAULT_CE
   const markersRef = useRef<unknown[]>([]);
 
   useEffect(() => {
-    if (!containerRef.current || mapRef.current) return;
+    if (!containerRef.current) return;
+    let cancelled = false;
 
     (async () => {
       const L = await import('leaflet');
+      // Guard after async: React 18 Strict Mode may have already cleaned up
+      if (cancelled || !containerRef.current) return;
+
       // Load Leaflet CSS by injecting a <link> tag (dynamic CSS import is not type-safe)
       if (!document.querySelector('link[href*="leaflet"]')) {
         const link = document.createElement('link');
@@ -45,7 +49,7 @@ export default function LeafletMap({ markers, tileServerUrl, center = DEFAULT_CE
         document.head.appendChild(link);
       }
 
-      const map = L.map(containerRef.current!, {
+      const map = L.map(containerRef.current, {
         center,
         zoom,
         zoomControl: true,
@@ -67,16 +71,13 @@ export default function LeafletMap({ markers, tileServerUrl, center = DEFAULT_CE
 
       mapRef.current = map;
 
-      // Add markers
+      // Render initial markers (the marker-update effect fires before async init
+      // completes, so we must seed markers here on first load)
       for (const marker of markers) {
         const color = MARKER_COLORS[marker.category] || '#94A3B8';
         const icon = L.divIcon({
           className: '',
-          html: `<div style="
-            width:12px; height:12px; border-radius:50%;
-            background:${color}; border:2px solid white;
-            box-shadow:0 1px 4px rgba(0,0,0,0.5);
-          "></div>`,
+          html: `<div style="width:12px;height:12px;border-radius:50%;background:${color};border:2px solid white;box-shadow:0 1px 4px rgba(0,0,0,0.5);"></div>`,
           iconSize: [12, 12],
           iconAnchor: [6, 6],
         });
@@ -88,6 +89,7 @@ export default function LeafletMap({ markers, tileServerUrl, center = DEFAULT_CE
     })();
 
     return () => {
+      cancelled = true;
       if (mapRef.current) {
         (mapRef.current as { remove: () => void }).remove();
         mapRef.current = null;

@@ -86,11 +86,13 @@ fi
 if command -v lsb_release &>/dev/null; then
   DISTRO=$(lsb_release -is)
   VERSION=$(lsb_release -rs)
-  log "Detected: $DISTRO $VERSION"
+  log "Detected distro: $DISTRO $VERSION"
   if [[ "$DISTRO" != "Ubuntu" && "$DISTRO" != "Debian" ]]; then
     warn "Unsupported distro: $DISTRO. Proceeding, but support is not guaranteed."
   fi
+  warn "WSL2 note: Docker Desktop integration and Ollama-on-WSL may require extra setup."
 fi
+
 success "OS check passed"
 
 # ─── Node.js ──────────────────────────────────────────────────────────────────
@@ -243,7 +245,11 @@ echo -e "${BOLD}  Terminal work is done. Start the server and open the dashboard
 echo ""
 echo -e "    ${YELLOW}bash scripts/start.sh${RESET}"
 echo ""
-echo -e "  Then open: ${BLUE}http://127.0.0.1:3001${RESET}"
+if [[ "$PLATFORM_MODE" == "wsl2" ]]; then
+  echo -e "  Then open from Windows or WSL browser: ${BLUE}http://127.0.0.1:3001${RESET}"
+else
+  echo -e "  Then open: ${BLUE}http://127.0.0.1:3001${RESET}"
+fi
 echo ""
 echo -e "  The ${BOLD}Setup Wizard${RESET} will launch on first visit and guide you through:"
 echo -e "    • Installing AI models (no terminal required)"

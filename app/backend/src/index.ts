@@ -21,12 +21,16 @@ import systemRoutes from './routes/system';
 import kiwixRoutes from './routes/kiwix';
 import updatesRoutes from './routes/updates';
 import setupRoutes from './routes/setup';
+import { detectRuntimePlatform } from './services/platform';
 
 async function main() {
   // ── Bootstrap ───────────────────────────────────────────────────────────────
   ensureDataDirs();
   initDb();
+  const runtimePlatform = detectRuntimePlatform();
+
   console.log(`[S.I.N.A] Data directory: ${config.paths.dataDir}`);
+  console.log(`[S.I.N.A] Platform: ${runtimePlatform.label}`);
 
   // ── Express ─────────────────────────────────────────────────────────────────
   const app = express();
@@ -89,11 +93,25 @@ async function main() {
   // ── Start ───────────────────────────────────────────────────────────────────
   const { port, bindAddress } = config.server;
   app.listen(port, bindAddress, () => {
+    const localUrl = `http://127.0.0.1:${port}`;
+    const boundUrl = `http://${bindAddress}:${port}`;
+
     console.log(`\n┌─────────────────────────────────────────┐`);
     console.log(`│  S.I.N.A Command Center — Backend       │`);
-    console.log(`│  http://${bindAddress}:${port}${' '.repeat(Math.max(0, 24 - bindAddress.length - String(port).length))}│`);
-    console.log(`│  Data: ${config.paths.dataDir.slice(0, 32).padEnd(32)} │`);
-    console.log(`└─────────────────────────────────────────┘\n`);
+    console.log(`│  Platform: ${runtimePlatform.id.padEnd(29)}│`);
+    console.log(`│  Access: ${boundUrl.slice(0, 31).padEnd(31)}│`);
+    console.log(`│  Local: ${localUrl.slice(0, 32).padEnd(32)} │`);
+    console.log(`└─────────────────────────────────────────┘`);
+
+    if (runtimePlatform.is_wsl2) {
+      console.log(`[S.I.N.A] WSL2 detected: open ${localUrl} from Windows browser or WSL browser.`);
+    }
+
+    if (bindAddress === '0.0.0.0') {
+      console.log('[S.I.N.A] LAN exposure enabled: use your machine IP address from another device.');
+    }
+
+    console.log('');
   });
 
   // ── File Watchers ───────────────────────────────────────────────────────────

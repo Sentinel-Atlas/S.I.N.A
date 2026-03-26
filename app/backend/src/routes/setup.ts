@@ -99,10 +99,10 @@ function getSetupState() {
 
   return {
     completed: Boolean(row.completed),
-    current_step: row.current_step,
+    current_step: row.current_step as string,
     steps: JSON.parse(row.steps as string || '[]'),
     started_at: row.started_at,
-    completed_at: row.completed_at || null,
+    completed_at: (row.completed_at as string | null) || null,
   };
 }
 

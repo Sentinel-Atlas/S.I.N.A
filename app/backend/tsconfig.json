@@ -13,9 +13,6 @@
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
-    "paths": {
-      "@sina/shared": ["../shared/src/index.ts"]
-    }
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]

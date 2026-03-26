@@ -38,10 +38,14 @@ export default function LibraryPage() {
         page,
         per_page: 50,
       });
-      setItems(result.items);
-      setTotal(result.total);
+      setItems(result?.items ?? []);
+      setTotal(result?.total ?? 0);
       const cols = await api.library.collections();
-      setCollections(cols);
+      setCollections(cols ?? []);
+    } catch (err) {
+      console.error('[Library] load failed:', err);
+      setItems([]);
+      setTotal(0);
     } finally {
       setLoading(false);
     }

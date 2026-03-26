@@ -64,6 +64,7 @@ export default function DownloadsPage() {
   }, []);
 
   const installItem = async (item: CatalogItem) => {
+    if (item.disabled || item.installed) return;
     await api.downloads.create({
       name: item.name,
       url: item.url,
@@ -163,15 +164,21 @@ export default function DownloadsPage() {
                   <p className="text-xs text-text-secondary mb-3 line-clamp-2">{item.description}</p>
 
                   <div className="flex items-center justify-between">
-                    <div className="text-2xs text-text-muted">{formatBytes(item.size_bytes)}</div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-2xs text-text-muted">{formatBytes(item.size_bytes)}</span>
+                      {item.type === 'ollama-model' && (
+                        <Badge variant="amber" className="text-2xs">via Ollama</Badge>
+                      )}
+                    </div>
                     <Button
                       size="sm"
-                      variant={item.installed ? 'ghost' : 'primary'}
-                      icon={<Download className="w-3 h-3" />}
+                      variant={item.installed ? 'ghost' : item.disabled ? 'ghost' : 'primary'}
+                      icon={item.disabled ? <ExternalLink className="w-3 h-3" /> : <Download className="w-3 h-3" />}
                       onClick={() => installItem(item)}
-                      disabled={item.installed}
+                      disabled={item.installed || item.disabled}
+                      title={item.disabled ? item.disabled_reason : undefined}
                     >
-                      {item.installed ? 'Installed' : 'Install'}
+                      {item.installed ? 'Installed' : item.disabled ? 'Manual' : 'Install'}
                     </Button>
                   </div>
 

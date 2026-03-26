@@ -77,7 +77,7 @@ async function main() {
     // Next.js static export — serve from 'out' if available
     const outDir = path.resolve(__dirname, '../../frontend/out');
     if (fs.existsSync(outDir)) {
-      app.use(express.static(outDir));
+      app.use(express.static(outDir, { extensions: ['html'] }));
       app.get('*', (_req, res) => {
         res.sendFile(path.join(outDir, 'index.html'));
       });

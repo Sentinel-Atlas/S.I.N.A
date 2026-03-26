@@ -148,6 +148,8 @@ export interface CatalogItem {
   install_path?: string;
   dependencies?: string[];
   post_install?: string;
+  disabled?: boolean;
+  disabled_reason?: string;
 }
 
 export type CatalogCategory =

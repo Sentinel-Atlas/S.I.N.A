@@ -104,7 +104,8 @@
       "tags": ["canada", "overview", "raster"],
       "license": "OpenStreetMap Contributors",
       "source": "OpenMapTiles / Geofabrik",
-      "_note": "URL must be configured manually — see docs/DATA_LAYOUT.md for map acquisition guide"
+      "disabled": true,
+      "disabled_reason": "Map tiles must be acquired manually from Geofabrik — see docs/DATA_LAYOUT.md"
     },
     {
       "id": "map-ontario",
@@ -117,7 +118,8 @@
       "tags": ["ontario", "canada", "detailed"],
       "license": "OpenStreetMap Contributors",
       "source": "OpenMapTiles / Geofabrik",
-      "_note": "URL must be configured manually — see docs/DATA_LAYOUT.md for map acquisition guide"
+      "disabled": true,
+      "disabled_reason": "Map tiles must be acquired manually from Geofabrik — see docs/DATA_LAYOUT.md"
     },
     {
       "id": "map-toronto-detail",
@@ -130,7 +132,8 @@
       "tags": ["toronto", "gta", "ontario", "street-level"],
       "license": "OpenStreetMap Contributors",
       "source": "OpenMapTiles / Geofabrik",
-      "_note": "URL must be configured manually — see docs/DATA_LAYOUT.md for map acquisition guide"
+      "disabled": true,
+      "disabled_reason": "Map tiles must be acquired manually from Geofabrik — see docs/DATA_LAYOUT.md"
     }
   ]
 }

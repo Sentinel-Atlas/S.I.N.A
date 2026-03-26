@@ -6,6 +6,7 @@ import {
   updateDownloadJob, startDownload, pauseDownload, cancelDownload,
   downloadEvents,
 } from '../services/downloadManager';
+import { getDb } from '../db';
 import type { DownloadStatus } from '@sina/shared';
 
 const router = Router();
@@ -71,11 +72,11 @@ router.post('/:id/cancel', (req, res) => {
   res.json({ success: true, data: getDownloadJob(req.params.id) });
 });
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', (req, res) => {
   const job = getDownloadJob(req.params.id);
   if (!job) return res.status(404).json({ success: false, error: 'Not found' });
   cancelDownload(req.params.id);
-  const db = (await import('../db')).getDb();
+  const db = getDb();
   db.prepare('DELETE FROM download_jobs WHERE id = ?').run(req.params.id);
   res.json({ success: true });
 });
@@ -108,12 +109,13 @@ router.get('/events/stream', (req, res) => {
 
 router.get('/catalog/items', (_req, res) => {
   try {
-    const catalogPath = path.resolve(process.cwd(), '../../registry/catalog.json');
+    // __dirname = app/backend/dist/routes/ → ../../../../ = project root
+    const catalogPath = path.resolve(__dirname, '../../../../registry/catalog.json');
     if (!fs.existsSync(catalogPath)) {
       return res.json({ success: true, data: [] });
     }
     const catalog = JSON.parse(fs.readFileSync(catalogPath, 'utf-8'));
-    const db = require('../db').getDb();
+    const db = getDb();
     const installed = db.prepare('SELECT catalog_id FROM installed_items').all() as { catalog_id: string }[];
     const installedIds = new Set(installed.map(i => i.catalog_id));
 

@@ -102,7 +102,13 @@ export async function startDownload(id: string): Promise<void> {
   updateDownloadJob(id, { status: 'downloading', error: undefined });
 
   try {
-    await _executeDownload(job, controller.signal);
+    if (job.url.startsWith('ollama://')) {
+      await _executeOllamaInstall(job);
+    } else if (!job.url) {
+      throw new Error('No download URL configured — this item requires manual installation.');
+    } else {
+      await _executeDownload(job, controller.signal);
+    }
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     updateDownloadJob(id, { status: 'failed', error: msg });
@@ -110,6 +116,37 @@ export async function startDownload(id: string): Promise<void> {
     activeDownloads.delete(id);
     _processQueue();
   }
+}
+
+async function _executeOllamaInstall(job: DownloadJob): Promise<void> {
+  // Parse: ollama://llama3.2:3b → "llama3.2:3b"
+  const modelName = job.url.replace('ollama://', '');
+
+  const { pullModel, checkOllamaAvailable } = await import('./ollamaAdapter');
+
+  const available = await checkOllamaAvailable();
+  if (!available) {
+    throw new Error('Ollama is not running. Start Ollama first, then retry.');
+  }
+
+  await pullModel(modelName, (pct: number, status: string) => {
+    updateDownloadJob(job.id, {
+      progress: pct,
+      downloaded_bytes: Math.round((pct / 100) * (job.size_bytes || 0)),
+    });
+    const updatedJob = getDownloadJob(job.id);
+    if (updatedJob) downloadEvents.emit('updated', { ...updatedJob, _ollama_status: status });
+  });
+
+  updateDownloadJob(job.id, { status: 'completed', progress: 100 });
+
+  // Register in installed_items so the catalog shows "Installed"
+  const db = getDb();
+  const installedId = uuidv4();
+  db.prepare(`
+    INSERT OR REPLACE INTO installed_items (id, catalog_id, name, category, type, install_path, size_bytes)
+    VALUES (?, ?, ?, 'ai-models', 'ollama-model', ?, ?)
+  `).run(installedId, job.catalog_item_id ?? modelName, modelName, modelName, job.size_bytes || 0);
 }
 
 async function _executeDownload(job: DownloadJob, signal: AbortSignal): Promise<void> {

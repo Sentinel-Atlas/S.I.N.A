@@ -216,8 +216,8 @@ if ! npm run build --workspace=app/backend; then
 fi
 success "Backend built"
 
-log "Building frontend (Next.js → .next/)..."
-if ! npm run build --workspace=app/frontend; then
+log "Building frontend (Next.js static export → out/)..."
+if ! NEXT_BUILD_MODE=static npm run build --workspace=app/frontend; then
   echo ""
   echo -e "${RED}${BOLD}  Frontend build failed.${RESET}"
   echo -e "${RED}  Check the Next.js build errors above.${RESET}"
